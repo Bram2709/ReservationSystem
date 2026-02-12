@@ -1,0 +1,15 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs: 
+  build: 
+    runs-on: ubuntu-latest
+
+    setps:
+    - name: Checkout source
+      uses: actions/checkout@v2
