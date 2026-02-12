@@ -5,6 +5,7 @@ using Service.Services;
 
 namespace API.Controllers
 {
+    
     [ApiController]
     [Route("api/[controller]")]
     public class RestaurantController(IRestaurantService restaurantService, ILogger<RestaurantController> logger) : ControllerBase
