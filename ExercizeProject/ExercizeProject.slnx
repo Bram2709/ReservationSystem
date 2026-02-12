@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="API/API.csproj" Id="2f4baf3b-11e5-4aec-ae4b-f8fc1ad5c03c" />
+  <Project Path="Models/Models.csproj" />
+  <Project Path="Repository/Repository.csproj" />
+  <Project Path="Service/Service.csproj" />
+  <Project Path="Test/Test.csproj" />
+</Solution>
