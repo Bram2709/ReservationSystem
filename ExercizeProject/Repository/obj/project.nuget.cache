@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ZXTubLEHKWo=",
+  "dgSpecHash": "mGU36agNc90=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Repository\\Repository.csproj",
+  "projectFilePath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Repository\\Repository.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Bram van de Wetering\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\Bram van de Wetering\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

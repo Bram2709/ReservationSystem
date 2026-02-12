@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Models\\Models.csproj",
+      "projectUniqueName": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Models\\Models.csproj",
       "projectName": "Models",
-      "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Models\\Models.csproj",
+      "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Models\\Models.csproj",
       "packagesPath": "C:\\Users\\Bram van de Wetering\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Models\\obj\\",
+      "outputPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Models\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

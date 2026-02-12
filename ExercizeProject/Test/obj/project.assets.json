@@ -1831,11 +1831,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Test\\Test.csproj",
+      "projectUniqueName": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Test\\Test.csproj",
       "projectName": "Test",
-      "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Test\\Test.csproj",
+      "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Test\\Test.csproj",
       "packagesPath": "C:\\Users\\Bram van de Wetering\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Test\\obj\\",
+      "outputPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Test\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1856,17 +1856,17 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\API\\API.csproj": {
-              "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\API\\API.csproj"
+            "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\API\\API.csproj": {
+              "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\API\\API.csproj"
             },
-            "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Models\\Models.csproj": {
-              "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Models\\Models.csproj"
+            "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Models\\Models.csproj": {
+              "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Models\\Models.csproj"
             },
-            "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Repository\\Repository.csproj": {
-              "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Repository\\Repository.csproj"
+            "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Repository\\Repository.csproj": {
+              "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Repository\\Repository.csproj"
             },
-            "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Service\\Service.csproj": {
-              "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\LearningApplication\\ExercizeProject\\Service\\Service.csproj"
+            "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Service\\Service.csproj": {
+              "projectPath": "C:\\Users\\Bram van de Wetering\\Documents\\Projects\\ReservationSystem\\ExercizeProject\\Service\\Service.csproj"
             }
           }
         }
