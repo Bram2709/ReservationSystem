@@ -12,6 +12,7 @@ namespace Repository.Extensions
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<ITableRepository, TableRepository>();
             services.AddScoped<IReservationRepository, ReservationRepository>();
+
         }
     }
 }
