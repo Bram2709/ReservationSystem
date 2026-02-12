@@ -6,10 +6,25 @@ on:
   pull_request:
     branches: [ develop ]
 
+stages:
+  - build
+  - test
+  - deploy
+
 jobs: 
   build: 
     runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/checkout@v6
+    
     - name: Checkout source
-      uses: actions/checkout@v2
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build ExercizeProject --configuration Release --no-restore
