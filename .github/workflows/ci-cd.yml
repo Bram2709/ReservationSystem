@@ -3,6 +3,8 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
 
 stages:
   - build
@@ -20,7 +22,7 @@ jobs:
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: '10.0.x'
-        
+
     - name: Install dependencies
       run: dotnet restore
 
