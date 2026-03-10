@@ -1,0 +1,53 @@
+.contentWrapper{
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 1280px;
+    padding-top: 6rem;
+    padding-bottom: 3rem;
+    display: grid;
+}
+
+.imageContent{
+    display: none;
+}
+
+.heading{
+    margin-bottom: 1rem;
+}
+
+
+@media (min-width: 768px) {
+    .contentWrapper{
+        padding-top: 7rem;
+        grid-template-columns: 1fr 1fr;
+        max-width: 1280px;
+        margin-left: auto;
+        margin-right: auto;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .imageContent{
+        display: flex;
+        grid-column: span 5 / span 5;
+    }
+
+    .image{
+        max-width: 100%;
+        height: auto;
+    }
+
+    .textContent{
+        /* place-self: center; */
+        grid-column: span 7 / span 7;
+    }
+
+    .buttonGroup{
+        margin-top: 1rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .paragraph{
+        max-width: 42rem;
+    }
+}
