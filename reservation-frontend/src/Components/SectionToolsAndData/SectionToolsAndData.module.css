@@ -5,8 +5,8 @@
 .contentWrapper{
     padding-left: 1rem;
     padding-right: 1rem;
-    padding-top: 6rem;
-    padding-bottom: 6rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
     max-width: 1280px; 
     display: grid;
     margin-top: 2rem;
@@ -53,6 +53,11 @@
 }
 
 @media (min-width: 768px) {
+    .contentWrapper{
+        padding-top: 6rem;
+        padding-bottom: 6rem;
+    }
+
     .image{
         display: flex;
         width: 100%;
