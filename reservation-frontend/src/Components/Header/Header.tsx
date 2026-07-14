@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import style from './Header.module.css';
 import { Button } from '../Button/Button';
-
+import { useNavigate } from 'react-router-dom';
 
 export function Header(){
+    const navigate = useNavigate();
 
     const [menu, setMenu] = useState(false);
+
+    const toRegisterPage = () => {
+        navigate("/register");
+    }
 
     return (
         <header className={style.header}>
@@ -22,7 +27,7 @@ export function Header(){
                     </div>
                     <div className={style.headerRightSide}>
                         {/* <button className={style.getStartedButton}>Get Started</button> */}
-                        <Button text='Get Started' onClick={() => {}} />
+                        <Button text='Get Started' onClick={toRegisterPage} />
                         <input type='image' className={style.menuButtonImg} src="/menu.png" alt="Menu" onClick={() => setMenu(!menu)} />
                     </div>
 

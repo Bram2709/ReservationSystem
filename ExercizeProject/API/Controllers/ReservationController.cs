@@ -1,7 +1,8 @@
-﻿using System.Collections;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Models.DTOs.Restaurant;
 using Models.Models;
 using Service.Interface;
+using System.Collections;
 
 namespace API.Controllers
 {
@@ -24,5 +25,6 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
             }
         }
+
     }
 }

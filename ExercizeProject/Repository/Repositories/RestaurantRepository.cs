@@ -46,5 +46,15 @@ namespace Repository.Repositories
             await context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<Restaurant>> GetAllRestaurantsFromUserAsync(Guid userId)
+        {
+            return await context.Restaurants
+                .Where(a => a.OrganizationId == userId)
+                .Include(r => r.Rooms)
+                    .ThenInclude(room => room.FloorPlan)
+                        .ThenInclude(fp => fp!.Shapes)
+                .ToListAsync();
+        }
     }
 }

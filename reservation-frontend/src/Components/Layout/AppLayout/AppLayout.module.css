@@ -1,0 +1,32 @@
+.wrapper {
+    background-color: var(--deep-cool-background-grey);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    overflow: visible;
+}
+
+.contentContainer {
+    flex: 1;
+}
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 10;
+}
+
+@media (min-width: 768px) {
+    .backdrop {
+        display: none;
+    }
+}

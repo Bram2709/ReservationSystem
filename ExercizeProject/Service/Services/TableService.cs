@@ -27,7 +27,7 @@ namespace Service.Services
                 TableNumber = tableDto.TableNumber,
                 MaxSeats = tableDto.MaxSeats,
                 MinSeats = tableDto.MinSeats,
-                RoomId = tableDto.RoomId
+                FloorPlanId = tableDto.FloorPlanId
             };
 
             return await tableRepository.CreateAsync(table);
@@ -41,7 +41,7 @@ namespace Service.Services
                 TableNumber = tableDto.TableNumber,
                 MaxSeats = tableDto.MaxSeats,
                 MinSeats = tableDto.MinSeats,
-                RoomId = tableDto.RoomId
+                FloorPlanId = tableDto.FloorPlanId
             };
 
             return await tableRepository.UpdateAsync(table);

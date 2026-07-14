@@ -6,8 +6,14 @@ namespace Models.Models
 {
     public class Restaurant
     {
-        public int Id { get; set; }
+
+        public Guid Id { get; set; }
+        public Guid OrganizationId { get; set; }
+        public Organization? Organization { get; set; }
+
         public required string Name { get; set; }
+        public string?Address { get; set; }
+
         public List<Room> Rooms { get; set; } = [];
     }
 }

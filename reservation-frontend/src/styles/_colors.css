@@ -1,0 +1,26 @@
+
+:root{
+    --black: #000;
+    --white: #FDFEFF;
+
+    --white-80: #FDFEFFCC;
+    --black-80: #000000CC;
+
+    /* Primary Colors */
+    --primary-purple: #6D28D9;
+    --muted-purple-tone: #E8E0EE;
+    --neutral-background-grey:#F8FAFC;
+    --deep-cool-background-grey: #F1F5F9;
+    --cool-grey-accent: #F1F5F9;
+
+    /*UI & Functional Palette*/
+    --deep-charcoal: #1D1A24;
+    --slate-grey: #64748B;
+
+    --success-green:#10B981;
+    --warning-orange: #F59E0B;
+    --error-red: #BA1A1A;
+
+    --occupied-table-accent: #7C3AED;
+    --shadow-purple: rgba(109,40,217,0.06);
+}

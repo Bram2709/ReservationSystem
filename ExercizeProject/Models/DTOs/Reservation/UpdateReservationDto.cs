@@ -7,7 +7,7 @@ namespace Models.DTOs.Reservation
 {
     public class UpdateReservationDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
@@ -15,6 +15,6 @@ namespace Models.DTOs.Reservation
         public int PartySize { get; set; }
         public TimeFrame TimeFrame { get; set; }
         public DateTime ReservationDateTime { get; set; }
-        public int? TableId { get; set; }
+        public Guid? TableId { get; set; }
     }
 }

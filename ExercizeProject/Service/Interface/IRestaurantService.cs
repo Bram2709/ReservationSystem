@@ -10,9 +10,11 @@ namespace Service.Interface
     {
         Task<IEnumerable<Restaurant>> GetAllAsync();
         Task<Restaurant?> GetByIdAsync(int id);
-        Task<Restaurant> CreateAsync(CreateRestaurantDto restaurantDto);
+        Task<Restaurant> CreateAsync(CreateRestaurantDto restaurantDto, Guid organizationId);
         Task<Restaurant> UpdateAsync(UpdateRestaurantDto restaurantDto);
         Task<bool> DeleteAsync(int id);
+
+        Task<IEnumerable<RestaurantDto>> GetAllRestaurantsFromUserAsync(Guid userId);
 
         Task OrganizeAsync(int restaurantId);
         Task MoveReservationAsync(int reservationId, int newTableId);

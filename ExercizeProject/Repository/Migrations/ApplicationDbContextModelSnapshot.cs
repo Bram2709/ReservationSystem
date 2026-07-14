@@ -17,18 +17,65 @@ namespace Repository.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Models.Models.Reservation", b =>
+            modelBuilder.Entity("Models.Models.FloorPlan", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId")
+                        .IsUnique();
+
+                    b.ToTable("FloorPlans");
+                });
+
+            modelBuilder.Entity("Models.Models.Organization", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeCustomerId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeCustomerName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("SubscriptionPlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SubscriptionStatus")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubscriptionPlanId");
+
+                    b.ToTable("Organizations");
+                });
+
+            modelBuilder.Entity("Models.Models.Reservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -61,11 +108,11 @@ namespace Repository.Migrations
                     b.Property<DateTime>("ReservationDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("RestaurantId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("TableId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TableId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("TimeFrame")
                         .HasColumnType("int");
@@ -84,28 +131,32 @@ namespace Repository.Migrations
 
             modelBuilder.Entity("Models.Models.Restaurant", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Restaurants");
                 });
 
             modelBuilder.Entity("Models.Models.Room", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -114,8 +165,8 @@ namespace Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RestaurantId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -124,13 +175,54 @@ namespace Repository.Migrations
                     b.ToTable("Rooms");
                 });
 
-            modelBuilder.Entity("Models.Models.Table", b =>
+            modelBuilder.Entity("Models.Models.SubscriptionPlan", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MaxReservationsPerMonth")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<int>("MaxResourcesPerRestaurant")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxRestaurants")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("StripePriceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SubscriptionPlans");
+                });
+
+            modelBuilder.Entity("Models.Models.Table", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Chairs")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ChairsLayout")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("FloorPlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
 
                     b.Property<int>("MaxSeats")
                         .HasColumnType("int");
@@ -138,17 +230,89 @@ namespace Repository.Migrations
                     b.Property<int>("MinSeats")
                         .HasColumnType("int");
 
-                    b.Property<int>("RoomId")
+                    b.Property<int>("Radius")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rotation")
                         .HasColumnType("int");
 
                     b.Property<int>("TableNumber")
                         .HasColumnType("int");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
+
+                    b.Property<int>("X")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Y")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("RoomId");
+                    b.HasIndex("FloorPlanId");
 
                     b.ToTable("Tables");
+                });
+
+            modelBuilder.Entity("Models.Models.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EmailConfirmation")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Models.Models.FloorPlan", b =>
+                {
+                    b.HasOne("Models.Models.Room", "Room")
+                        .WithOne("FloorPlan")
+                        .HasForeignKey("Models.Models.FloorPlan", "RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("Models.Models.Organization", b =>
+                {
+                    b.HasOne("Models.Models.SubscriptionPlan", "SubscriptionPlan")
+                        .WithMany()
+                        .HasForeignKey("SubscriptionPlanId");
+
+                    b.Navigation("SubscriptionPlan");
                 });
 
             modelBuilder.Entity("Models.Models.Reservation", b =>
@@ -168,6 +332,17 @@ namespace Repository.Migrations
                     b.Navigation("Table");
                 });
 
+            modelBuilder.Entity("Models.Models.Restaurant", b =>
+                {
+                    b.HasOne("Models.Models.Organization", "Organization")
+                        .WithMany("Restaurants")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Models.Models.Room", b =>
                 {
                     b.HasOne("Models.Models.Restaurant", "Restaurant")
@@ -181,13 +356,36 @@ namespace Repository.Migrations
 
             modelBuilder.Entity("Models.Models.Table", b =>
                 {
-                    b.HasOne("Models.Models.Room", "Room")
-                        .WithMany("Tables")
-                        .HasForeignKey("RoomId")
+                    b.HasOne("Models.Models.FloorPlan", "FloorPlan")
+                        .WithMany("Shapes")
+                        .HasForeignKey("FloorPlanId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Room");
+                    b.Navigation("FloorPlan");
+                });
+
+            modelBuilder.Entity("Models.Models.User", b =>
+                {
+                    b.HasOne("Models.Models.Organization", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("Models.Models.FloorPlan", b =>
+                {
+                    b.Navigation("Shapes");
+                });
+
+            modelBuilder.Entity("Models.Models.Organization", b =>
+                {
+                    b.Navigation("Restaurants");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Models.Models.Restaurant", b =>
@@ -197,7 +395,7 @@ namespace Repository.Migrations
 
             modelBuilder.Entity("Models.Models.Room", b =>
                 {
-                    b.Navigation("Tables");
+                    b.Navigation("FloorPlan");
                 });
 
             modelBuilder.Entity("Models.Models.Table", b =>

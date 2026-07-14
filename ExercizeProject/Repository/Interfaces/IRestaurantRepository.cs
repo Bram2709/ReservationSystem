@@ -12,5 +12,7 @@ namespace Repository.Interfaces
         Task<Restaurant> CreateAsync(Restaurant restaurant);
         Task<Restaurant> UpdateAsync(Restaurant restaurant);
         Task<bool> DeleteAsync(int id);
+
+        Task<IEnumerable<Restaurant>> GetAllRestaurantsFromUserAsync(Guid userId);
     }
 }

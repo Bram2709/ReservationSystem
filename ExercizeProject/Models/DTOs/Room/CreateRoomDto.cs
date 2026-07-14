@@ -9,6 +9,6 @@ namespace Models.DTOs.Room
     {
         public required string Name { get; set; }
         public bool IsActive { get; set; }
-        public int RestaurantId { get; set; }
+        public Guid RestaurantId { get; set; }
     }
 }

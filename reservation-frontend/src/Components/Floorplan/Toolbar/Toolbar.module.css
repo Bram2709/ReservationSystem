@@ -1,0 +1,162 @@
+/* ── layout ── */
+.wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    position: relative;
+    height: 100%;
+}
+
+/* ── popout panel (left of the rail) ── */
+.editorPopout {
+    position: absolute;
+    right: 64px; /* sits just left of the icon rail */
+    top: 0;
+    z-index: 10;
+}
+
+/* ── icon rail (right column) ── */
+.wrappercontent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 12px 8px;
+    background: var(--white);
+    border-left: 1px solid rgba(0,0,0,0.05);
+    width: 52px;
+    box-sizing: border-box;
+}
+
+.editoroptions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+/* each icon button */
+.editoroptions li {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.16s ease;
+}
+
+.editoroptions li:hover {
+    background: var(--muted-purple-tone);
+}
+
+.editoroptions li.active {
+    background: var(--primary-purple);
+}
+
+.editoroptions li.active img {
+    filter: brightness(0) invert(1); /* white icon on purple bg */
+}
+
+.tableType {
+    width: 22px;
+    height: 22px;
+    pointer-events: none; /* clicks handled by the li */
+}
+
+/* info button pinned to bottom */
+.infoBtn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.1);
+    background: transparent;
+    cursor: pointer;
+    color: var(--slate-grey);
+    transition: border-color 0.16s ease, color 0.16s ease;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+.infoBtn:hover {
+    border-color: var(--primary-purple);
+    color: var(--primary-purple);
+}
+
+/* ── toggle button (mobile tab on the left edge) ── */
+.toggleBtn {
+    display: none;
+    position: absolute;
+    left: -28px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 48px;
+    background: var(--white);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--slate-grey);
+    padding: 0;
+}
+
+/* ── mobile ── */
+@media (max-width: 768px) {
+    .toggleBtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .wrapper {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(100%);
+        z-index: 20;
+        box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+    }
+
+    .wrapper.open {
+        transform: translateX(0);
+    }
+}
+
+/* ── legacy / unused ── */
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.button {
+    padding: 8px 12px;
+    background: var(--primary-purple);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tableTypeList {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+}

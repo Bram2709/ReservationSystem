@@ -10,6 +10,6 @@ namespace Models.DTOs.Table
         public int TableNumber { get; set; }
         public int MinSeats { get; set; } = 1;
         public int MaxSeats { get; set; }
-        public int RoomId { get; set; }
+        public Guid FloorPlanId { get; set; }
     }
 }
