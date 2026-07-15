@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Models.DTOs;
 using Models.Models;
 using Service.Interface;
-using System.Collections;
+using System.Security.Claims;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace API.Controllers
 {
@@ -16,50 +13,51 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class FloorplanController(IFloorplanInterface floorplanInterface, ILogger<FloorplanController> logger) : ControllerBase
     {
-
-        private static readonly JsonSerializerOptions _jsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
         [HttpPost]
-        public async Task<IActionResult> SaveFloorplan([FromBody] FloorplanDTO floorplanDTO)
+        public async Task<ActionResult<FloorplanSaveResultDto>> SaveFloorplan([FromBody] FloorplanDTO floorplanDTO)
         {
+            if (!TryGetOrganizationId(out var organizationId))
+                return Unauthorized();
+
             if (floorplanDTO == null || floorplanDTO.Shapes.ValueKind != JsonValueKind.Array)
-            {
                 return BadRequest("Invalid floorplan data.");
-            }
 
             try
             {
-                var created = await floorplanInterface.saveFloorPlan(floorplanDTO);
-                return Ok(created);
+                var result = await floorplanInterface.SaveFloorPlanAsync(floorplanDTO, organizationId);
+                return result is null ? NotFound("Room not found for your organization.") : Ok(result);
             }
             catch (Exception e)
             {
+                const string errorMsg = "An error occurred while saving the floorplan";
                 logger.LogError(e, "Failed to save floorplan for RoomId {RoomId}", floorplanDTO?.RoomId);
-                // return full exception text to aid debugging (remove in production)
-                return StatusCode(StatusCodes.Status500InternalServerError, e.ToString());
+                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
             }
         }
 
         [HttpGet("{roomId:guid}")]
         public async Task<ActionResult<IEnumerable<FloorPlan>>> GetFloorplansForRoom([FromRoute] Guid roomId)
         {
+            if (!TryGetOrganizationId(out var organizationId))
+                return Unauthorized();
+
             if (roomId == Guid.Empty)
-            {
                 return BadRequest();
-            }
+
             try
             {
-                var floorplans = await floorplanInterface.GetFloorplansForRoom(roomId);
-                return Ok(floorplans);
+                var floorplans = await floorplanInterface.GetFloorplansForRoomAsync(roomId, organizationId);
+                return floorplans is null ? NotFound("Room not found for your organization.") : Ok(floorplans);
             }
             catch (Exception e)
             {
+                const string errorMsg = "An error occurred while retrieving the floorplan";
                 logger.LogError(e, "Failed to get floorplans for RoomId {RoomId}", roomId);
-                return StatusCode(StatusCodes.Status500InternalServerError, e.ToString());
+                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
             }
         }
+
+        private bool TryGetOrganizationId(out Guid organizationId) =>
+            Guid.TryParse(User.FindFirstValue("organizationId"), out organizationId);
     }
 }

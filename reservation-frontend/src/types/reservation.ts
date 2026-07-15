@@ -55,3 +55,16 @@ export interface ReservationFilters {
     to?: string;
     timeFrame?: TimeFrame;
 }
+
+// Mirrors Models.DTOs.Reservation.TableAvailabilityDto
+export interface TableAvailability {
+    id: string;
+    tableNumber: number;
+    minSeats: number;
+    maxSeats: number;
+    roomName: string | null;
+    isOccupied: boolean;
+    occupiedByName: string | null;
+    fitsParty: boolean;
+    isCurrent: boolean;
+}

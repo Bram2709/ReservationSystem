@@ -16,6 +16,7 @@ export function Floorplan() {
     addCircleTable,
     addWall,
     updateShape,
+    removeShape,
     setTableNumber,
     batchUpdateShapes,
     selectedId,
@@ -45,19 +46,59 @@ export function Floorplan() {
     if (selectedRoomId) loadFloorplan(selectedRoomId);
   }, [selectedRoomId]);
 
+  // Delete/Backspace removes the selected shape — but not while typing in a field.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const el = document.activeElement;
+      const typing = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+      if (typing || !selectedId) return;
+      e.preventDefault();
+      removeShape(selectedId);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedId, removeShape]);
+
+  const [saveNotice, setSaveNotice] = useState<{ kind: "success" | "warning"; text: string } | null>(null);
+
   function handleRoomChange(id: string) {
     setSelectedRoomId(id);
+    setSaveNotice(null);
   }
 
   async function saveFloorPlan() {
     if (!selectedRoomId) return;
-    await FloorplanService.saveFloorplan(shapes, selectedRoomId);
+    try {
+      const result = await FloorplanService.saveFloorplan(shapes, selectedRoomId);
+      const unassigned = result.unassignedReservationCount;
+      setSaveNotice(
+        unassigned > 0
+          ? {
+              kind: "warning",
+              text: `Floorplan saved. ${unassigned} reservation${unassigned === 1 ? " was" : "s were"} unassigned because ${unassigned === 1 ? "its" : "their"} table was removed — find ${unassigned === 1 ? "it" : "them"} under 'Unassigned' in the Reservations tab.`,
+            }
+          : { kind: "success", text: "Floorplan saved." }
+      );
+    } catch {
+      setSaveNotice({ kind: "warning", text: "Could not save the floorplan. Please try again." });
+    }
   }
 
   return (
     <div className={style.wrapper}>
       <div className={style.leftSide}>
         <h1>Restaurant Floorplan Editor</h1>
+
+        {saveNotice && (
+          <div
+            className={saveNotice.kind === "success" ? style.noticeSuccess : style.noticeWarning}
+            role="status"
+          >
+            <span>{saveNotice.text}</span>
+            <button className={style.noticeClose} onClick={() => setSaveNotice(null)} aria-label="Dismiss">×</button>
+          </div>
+        )}
 
         <div className={style.roomSelector}>
           <label htmlFor="select-room">Edit room:</label>
@@ -103,6 +144,7 @@ export function Floorplan() {
           selectedShape={selectedShape}
           onSetTableNumber={setTableNumber}
           onUpdateShape={updateShape}
+          onDeleteShape={removeShape}
         />
       </div>
     </div>

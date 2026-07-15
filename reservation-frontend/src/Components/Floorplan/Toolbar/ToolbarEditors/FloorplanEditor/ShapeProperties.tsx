@@ -5,6 +5,7 @@ interface Props {
     shape: FloorShape;
     onSetTableNumber: (id: string, tableNumber: number) => void;
     onUpdateShape: (id: string, updates: Partial<FloorShape>) => void;
+    onDelete: (id: string) => void;
 }
 
 const LABEL: Record<string, string> = {
@@ -14,7 +15,7 @@ const LABEL: Record<string, string> = {
     'room': 'Room',
 };
 
-export function ShapeProperties({ shape, onSetTableNumber, onUpdateShape }: Props) {
+export function ShapeProperties({ shape, onSetTableNumber, onUpdateShape, onDelete }: Props) {
     const isTable = shape.type === 'rect-table' || shape.type === 'circle-table';
 
     return (
@@ -75,6 +76,19 @@ export function ShapeProperties({ shape, onSetTableNumber, onUpdateShape }: Prop
                         }}
                     />
                 </div>
+            )}
+
+            <button
+                type="button"
+                className={style.deleteBtn}
+                onClick={() => onDelete(shape.id)}
+            >
+                Delete {LABEL[shape.type]?.toLowerCase() ?? 'shape'}
+            </button>
+            {isTable && (
+                <p className={style.deleteHint}>
+                    Removing a table unassigns any reservations on it. Save to apply.
+                </p>
             )}
         </div>
     );

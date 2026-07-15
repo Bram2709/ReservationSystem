@@ -7,9 +7,10 @@ interface Props {
     selectedShape?: FloorShape;
     onSetTableNumber: (id: string, tableNumber: number) => void;
     onUpdateShape: (id: string, updates: Partial<FloorShape>) => void;
+    onDeleteShape: (id: string) => void;
 }
 
-export function FloorplanEditor({ selectedShape, onSetTableNumber, onUpdateShape }: Props) {
+export function FloorplanEditor({ selectedShape, onSetTableNumber, onUpdateShape, onDeleteShape }: Props) {
     return (
         <EditorBase title="Properties">
             <div className={style.wrapper}>
@@ -18,6 +19,7 @@ export function FloorplanEditor({ selectedShape, onSetTableNumber, onUpdateShape
                         shape={selectedShape}
                         onSetTableNumber={onSetTableNumber}
                         onUpdateShape={onUpdateShape}
+                        onDelete={onDeleteShape}
                     />
                 ) : (
                     <p className={style.empty}>Select a shape on the canvas to edit its properties.</p>

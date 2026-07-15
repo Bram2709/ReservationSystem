@@ -52,3 +52,26 @@
     text-align: center;
     padding: 20px 0;
 }
+
+.deleteBtn {
+    margin-top: 4px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--error-red, #ba1a1a);
+    background: #fff;
+    border: 1.5px solid var(--error-red, #ba1a1a);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.deleteBtn:hover {
+    background: color-mix(in srgb, var(--error-red, #ba1a1a) 8%, #fff);
+}
+
+.deleteHint {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--slate-grey, #64748b);
+}

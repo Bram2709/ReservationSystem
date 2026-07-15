@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Nodes;
-using Models.DTOs;
+﻿using Models.DTOs;
 using Models.Models;
 
 namespace Service.Interface
 {
     public interface IFloorplanInterface
     {
-        Task<FloorPlan> saveFloorPlan(FloorplanDTO floorplanDto);
-        Task<IEnumerable<FloorPlan>> GetFloorplansForRoom(Guid roomId);
+        // Null when the room is not owned by the caller's organization.
+        Task<FloorplanSaveResultDto?> SaveFloorPlanAsync(FloorplanDTO floorplanDto, Guid organizationId);
+
+        Task<IEnumerable<FloorPlan>?> GetFloorplansForRoomAsync(Guid roomId, Guid organizationId);
     }
 }

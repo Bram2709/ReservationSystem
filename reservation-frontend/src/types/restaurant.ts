@@ -1,5 +1,3 @@
-import type { FloorShape } from './shapes';
-
 // Mirrors Models.DTOs.Restaurant.RoomDto
 export interface Room {
     id: string;
@@ -21,11 +19,35 @@ export interface Restaurant {
     rooms: Room[];
 }
 
+// Mirrors Models.DTOs.Restaurant.TableDto — a persisted floorplan shape with seat info.
+export interface FloorplanTable {
+    id: string;
+    tableNumber: number;
+    minSeats: number;
+    maxSeats: number;
+    x: number;
+    y: number;
+    chairs: number;
+    rotation: number;
+    type: string | null;
+    width: number;
+    height: number;
+    radius: number;
+    chairsLayout: number[];
+}
+
+// Mirrors Models.DTOs.Restaurant.FloorPlanDto
 export interface Floorplan {
     id: string;
-    restaurantId: string;
+    shapes: FloorplanTable[];
+}
+
+// Mirrors Models.DTOs.FloorplanSaveResultDto
+export interface FloorplanSaveResult {
+    floorPlanId: string;
     roomId: string;
-    shapes: FloorShape[];
+    tableCount: number;
+    unassignedReservationCount: number;
 }
 
 export interface CreateRestaurantPayload {

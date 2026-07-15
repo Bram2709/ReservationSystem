@@ -95,6 +95,12 @@ export function useFloorplan() {
     setShapes(prev => prev.map(s => (s.id === id ? { ...s, ...updates } as FloorShape : s)));
   };
 
+  const removeShape = (id: string) => {
+    setShapes(prev => prev.filter(s => s.id !== id));
+    setSelectedId(cur => (cur === id ? null : cur));
+    setSelectedIds(prev => prev.filter(x => x !== id));
+  };
+
   /** Update table number locally and persist via PATCH. */
   const setTableNumber = async (id: string, tableNumber: number) => {
     updateShape(id, { tableNumber });
@@ -121,6 +127,7 @@ export function useFloorplan() {
     addCircleTable,
     addWall,
     updateShape,
+    removeShape,
     setTableNumber,
     batchUpdateShapes,
     selectedId,

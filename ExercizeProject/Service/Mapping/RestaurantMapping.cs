@@ -47,7 +47,8 @@ namespace Service.Mapping
                         Type = t.Type,
                         Width = t.Width,
                         Height = t.Height,
-                        Radius = t.Radius
+                        Radius = t.Radius,
+                        ChairsLayout = t.ChairsLayout
                     }).ToList()
                 }
             };

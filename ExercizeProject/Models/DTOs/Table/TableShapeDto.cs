@@ -7,6 +7,10 @@ namespace Models.DTOs.Table
     public class TableShapeDto
     {
         public Guid Id { get; set; }
+
+        // Client-assigned table number; 0 when the shape is new and unnumbered.
+        public int TableNumber { get; set; }
+
         public string? Type { get; set; }
         public int X { get; set; }
         public int Y { get; set; }

@@ -118,6 +118,51 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("{id:guid}/available-tables")]
+        public async Task<ActionResult<IEnumerable<TableAvailabilityDto>>> GetAvailableTables(Guid id)
+        {
+            if (!TryGetOrganizationId(out var organizationId))
+                return Unauthorized();
+
+            try
+            {
+                var tables = await reservationService.GetAvailableTablesAsync(id, organizationId);
+                return tables is null ? NotFound() : Ok(tables);
+            }
+            catch (Exception e)
+            {
+                const string errorMsg = "An error occurred while retrieving available tables";
+                logger.LogError(e, errorMsg);
+                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
+            }
+        }
+
+        [HttpPut("{id:guid}/table")]
+        public async Task<ActionResult<ReservationDto>> AssignTable(Guid id, [FromBody] AssignTableDto dto)
+        {
+            if (!TryGetOrganizationId(out var organizationId))
+                return Unauthorized();
+
+            try
+            {
+                var (outcome, reservation) = await reservationService.AssignTableAsync(id, dto.TableId, organizationId);
+                return outcome switch
+                {
+                    AssignTableOutcome.Assigned => Ok(reservation),
+                    AssignTableOutcome.ReservationNotFound => NotFound(),
+                    AssignTableOutcome.TableNotInRestaurant => BadRequest("That table is not part of this reservation's restaurant."),
+                    AssignTableOutcome.TableOccupied => Conflict("That table is already taken for this service."),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError),
+                };
+            }
+            catch (Exception e)
+            {
+                const string errorMsg = "An error occurred while assigning the table";
+                logger.LogError(e, errorMsg);
+                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
+            }
+        }
+
         private bool TryGetOrganizationId(out Guid organizationId) =>
             Guid.TryParse(User.FindFirstValue("organizationId"), out organizationId);
     }

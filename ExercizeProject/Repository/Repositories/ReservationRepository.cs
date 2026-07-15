@@ -93,5 +93,48 @@ namespace Repository.Repositories
                 .AnyAsync(t => t.Id == tableId
                     && t.FloorPlan!.Room!.Restaurant!.OrganizationId == organizationId);
         }
+
+        public async Task<bool> TableBelongsToRestaurantAsync(Guid tableId, Guid restaurantId)
+        {
+            // Table -> FloorPlan -> Room -> Restaurant
+            return await context.Tables
+                .AnyAsync(t => t.Id == tableId
+                    && t.FloorPlan!.Room!.RestaurantId == restaurantId);
+        }
+
+        public async Task<IReadOnlyList<Table>> GetSeatableTablesForRestaurantAsync(Guid restaurantId)
+        {
+            // Walls and other decor have MaxSeats == 0 and are not seatable.
+            return await context.Tables
+                .Where(t => t.FloorPlan!.Room!.RestaurantId == restaurantId && t.MaxSeats > 0)
+                .Include(t => t.FloorPlan!).ThenInclude(fp => fp.Room)
+                .OrderBy(t => t.TableNumber)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<Reservation>> GetTableHoldersInSlotAsync(
+            Guid restaurantId,
+            DateTime dayStartUtc,
+            DateTime dayEndUtc,
+            TimeFrame timeFrame,
+            Guid? excludeReservationId)
+        {
+            // A day+service range rather than an exact instant: two dinner bookings on the same
+            // day compete for the same table. Range comparison avoids translating .Date through
+            // the UTC value converter on ReservationDateTime.
+            var query = context.Reservations
+                .Where(r => !r.IsDeleted
+                    && r.RestaurantId == restaurantId
+                    && r.TableId != null
+                    && r.TimeFrame == timeFrame
+                    && r.ReservationDateTime >= dayStartUtc
+                    && r.ReservationDateTime < dayEndUtc);
+
+            if (excludeReservationId.HasValue)
+                query = query.Where(r => r.Id != excludeReservationId.Value);
+
+            return await query.AsNoTracking().ToListAsync();
+        }
     }
 }

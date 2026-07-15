@@ -17,9 +17,10 @@ interface Props {
   selectedShape?: FloorShape;
   onSetTableNumber: (id: string, tableNumber: number) => void;
   onUpdateShape: (id: string, updates: Partial<FloorShape>) => void;
+  onDeleteShape: (id: string) => void;
 }
 
-export function Toolbar({ onAddRect, onAddCircle, onAddWall, onGroupAsRoom, selectedWallCount, onAddRectWithSideChair, onAddRectWithSideChairs, onSaveFloorplan, selectedShape, onSetTableNumber, onUpdateShape }: Props) {
+export function Toolbar({ onAddRect, onAddCircle, onAddWall, onGroupAsRoom, selectedWallCount, onAddRectWithSideChair, onAddRectWithSideChairs, onSaveFloorplan, selectedShape, onSetTableNumber, onUpdateShape, onDeleteShape }: Props) {
     const [open, setOpen] = useState(false);
 
     const [activeEditor, setActiveEditor] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export function Toolbar({ onAddRect, onAddCircle, onAddWall, onGroupAsRoom, sele
             <div className={style.editorPopout}>
                 { activeEditor === 'table' ? <TableEditor onAddRect={onAddRect} onAddCircle={onAddCircle} onAddWall={onAddWall} onGroupAsRoom={onGroupAsRoom} selectedWallCount={selectedWallCount} onAddRectWithSideChair={onAddRectWithSideChair} onAddRectWithSideChairs={onAddRectWithSideChairs} /> : null }
                 { activeEditor === 'editor2' ? <Editor2 /> : null }
-                { activeEditor === 'floorplanEditor' ? <FloorplanEditor selectedShape={selectedShape} onSetTableNumber={onSetTableNumber} onUpdateShape={onUpdateShape} /> : null }
+                { activeEditor === 'floorplanEditor' ? <FloorplanEditor selectedShape={selectedShape} onSetTableNumber={onSetTableNumber} onUpdateShape={onUpdateShape} onDeleteShape={onDeleteShape} /> : null }
             </div>
 
             <div className={style.wrappercontent}>

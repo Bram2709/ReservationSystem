@@ -5,7 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>f97a4170-d512-4888-a261-5031293ae150</UserSecretsId>
-</PropertyGroup>
+	  <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />

@@ -12,6 +12,44 @@
     overflow: hidden; */
 }
 
+.noticeSuccess,
+.noticeWarning {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px 0;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.noticeSuccess {
+    border: 1px solid var(--success-green);
+    background-color: color-mix(in srgb, var(--success-green) 10%, var(--white));
+    color: var(--success-green);
+}
+
+.noticeWarning {
+    border: 1px solid var(--warning-orange);
+    background-color: color-mix(in srgb, var(--warning-orange) 12%, var(--white));
+    color: color-mix(in srgb, var(--warning-orange) 80%, var(--black));
+}
+
+.noticeClose {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
 @media (max-width: 768px) {
     .rightSide {
         width: 0;

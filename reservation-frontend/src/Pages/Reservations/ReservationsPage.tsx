@@ -2,9 +2,15 @@ import { useMemo, useState } from "react";
 import { useReservations } from "../../hooks/useReservations";
 import { useRestaurants } from "../../hooks/useRestaurants";
 import { TIME_FRAME_LABELS, TimeFrame } from "../../types/reservation";
-import type { Reservation, ReservationFilters } from "../../types/reservation";
+import type { CreateReservationPayload, Reservation, ReservationFilters } from "../../types/reservation";
 import { ReservationForm } from "./ReservationForm";
+import { TablePicker } from "./TablePicker";
 import style from "./ReservationPage.module.css";
+
+interface Notice {
+    kind: "success" | "warning";
+    text: string;
+}
 
 /** Turns a yyyy-mm-dd day into the [from, to) range the API expects. */
 function dayRange(day: string): { from?: string; to?: string } {
@@ -34,6 +40,8 @@ export function ReservationsPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [notice, setNotice] = useState<Notice | null>(null);
+    const [tablePickerFor, setTablePickerFor] = useState<Reservation | null>(null);
 
     const filters: ReservationFilters = useMemo(() => ({
         ...dayRange(day),
@@ -48,9 +56,22 @@ export function ReservationsPage() {
         createReservation,
         updateReservation,
         deleteReservation,
+        assignTable,
     } = useReservations(filters);
 
     const { restaurants } = useRestaurants();
+
+    // Wraps create so we can tell the user whether a table was auto-assigned. The API tries to
+    // seat the party; a null tableId on the result means nothing was free for that slot.
+    async function handleCreate(payload: CreateReservationPayload): Promise<Reservation> {
+        const created = await createReservation(payload);
+        setNotice(
+            created.tableNumber != null
+                ? { kind: "success", text: `Reservation added and seated at table #${created.tableNumber}.` }
+                : { kind: "warning", text: "Reservation added, but no table was free for that slot — it's unassigned. You can assign one below." }
+        );
+        return created;
+    }
 
     // Name/email search stays client-side: the API has no text filter, and the result
     // set is already narrowed by day/restaurant/timeframe.
@@ -70,6 +91,7 @@ export function ReservationsPage() {
     function openCreate() {
         setEditing(null);
         setActionError(null);
+        setNotice(null);
         setIsFormOpen(true);
     }
 
@@ -160,6 +182,15 @@ export function ReservationsPage() {
                 )}
             </section>
 
+            {notice && (
+                <div
+                    className={notice.kind === "success" ? style.successBanner : style.warningBanner}
+                    role="status"
+                >
+                    <span>{notice.text}</span>
+                    <button className={style.bannerClose} onClick={() => setNotice(null)} aria-label="Dismiss">×</button>
+                </div>
+            )}
             {actionError && <div className={style.errorBanner} role="alert">{actionError}</div>}
             {error && <div className={style.errorBanner} role="alert">{error}</div>}
 
@@ -203,9 +234,17 @@ export function ReservationsPage() {
                                     <td>{r.partySize}</td>
                                     <td>{r.restaurantName ?? "—"}</td>
                                     <td>
-                                        {r.tableNumber != null
-                                            ? <span className={style.tableBadge}>#{r.tableNumber}</span>
-                                            : <span className={style.unassigned}>Unassigned</span>}
+                                        <div className={style.tableCell}>
+                                            {r.tableNumber != null
+                                                ? <span className={style.tableBadge}>#{r.tableNumber}</span>
+                                                : <span className={style.unassigned}>Unassigned</span>}
+                                            <button
+                                                className={style.linkBtn}
+                                                onClick={() => { setActionError(null); setTablePickerFor(r); }}
+                                            >
+                                                {r.tableNumber != null ? "Change" : "Assign"}
+                                            </button>
+                                        </div>
                                     </td>
                                     <td className={style.actions}>
                                         {pendingDeleteId === r.id ? (
@@ -252,8 +291,16 @@ export function ReservationsPage() {
                     reservation={editing}
                     restaurants={restaurants}
                     onClose={() => setIsFormOpen(false)}
-                    onCreate={createReservation}
+                    onCreate={handleCreate}
                     onUpdate={updateReservation}
+                />
+            )}
+
+            {tablePickerFor && (
+                <TablePicker
+                    reservation={tablePickerFor}
+                    onClose={() => setTablePickerFor(null)}
+                    onAssign={assignTable}
                 />
             )}
         </div>

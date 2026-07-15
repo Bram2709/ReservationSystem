@@ -10,6 +10,7 @@ import { RegisterPage } from './Pages/Register/RegisterPage.tsx';
 import { AuthProvider } from './context/AuthContext.tsx';
 import { ProtectedRoute } from './Components/ProtectedRoute/ProtectedRoute.tsx';
 import { Floorplan } from './Pages/Floorplan/Floorplan.tsx';
+import { FloorViewPage } from './Pages/FloorView/FloorViewPage.tsx';
 import { DashboardNewPage } from './Pages/DashboardNew/DashboardNewPage.tsx';
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
             {/* Restaurants and their rooms are managed together on one page. */}
             <Route path='/restaurants' element={<RestaurantsPage />} />
             <Route path='/floorplan' element={<Floorplan />} />
+            <Route path='/floor-view' element={<FloorViewPage />} />
           </Route>
         </Route>
       </Routes>

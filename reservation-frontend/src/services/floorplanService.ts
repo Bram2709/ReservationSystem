@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { FloorShape } from '../types/shapes';
-import type { Floorplan } from '../types/restaurant';
+import type { Floorplan, FloorplanSaveResult } from '../types/restaurant';
 
 /** Serialize shapes for backend — do not coerce `chairs` here. */
 function serializeShapes(shapes: FloorShape[]) {
@@ -29,9 +29,9 @@ export class FloorplanService {
         }
     }
 
-    static async saveFloorplan(floorplanData: FloorShape[], roomId: string): Promise<Floorplan> {
+    static async saveFloorplan(floorplanData: FloorShape[], roomId: string): Promise<FloorplanSaveResult> {
         try {
-            const response = await axios.post('/floorplan', {
+            const response = await axios.post<FloorplanSaveResult>('/floorplan', {
                 roomId,
                 shapes: serializeShapes(floorplanData),
             });

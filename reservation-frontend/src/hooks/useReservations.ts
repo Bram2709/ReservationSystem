@@ -51,6 +51,13 @@ export function useReservations(filters: ReservationFilters) {
         setReservations((current) => current.filter((r) => r.id !== id));
     }, []);
 
+    const assignTable = useCallback(async (id: string, tableId: string | null) => {
+        const updated = await ReservationService.assignTable(id, tableId);
+        // Patch the single row in place rather than refetching the whole list.
+        setReservations((current) => current.map((r) => (r.id === id ? updated : r)));
+        return updated;
+    }, []);
+
     return {
         reservations,
         loading,
@@ -59,5 +66,6 @@ export function useReservations(filters: ReservationFilters) {
         createReservation,
         updateReservation,
         deleteReservation,
+        assignTable,
     };
 }

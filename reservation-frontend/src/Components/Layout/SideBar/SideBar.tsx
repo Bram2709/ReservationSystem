@@ -32,7 +32,8 @@ export function SideBar({ isOpen, isCollapsed, onToggleCollapse }: SideBarProps)
                 <li className={style.menuItem}><Link to="/reservations"><img src="src/assets/icons/black/calendar.svg" className={style.icon} alt=""/><span className={style.label}>Reservations</span></Link></li>
                 {/* Rooms are managed inside their restaurant, so there is no separate Rooms entry. */}
                 <li className={style.menuItem}><Link to="/restaurants"><img src="src/assets/icons/black/fork.svg" className={style.icon} alt=""/><span className={style.label}>Restaurants</span></Link></li>
-                <li className={style.menuItem}><Link to="/floorplan"><img src="src/assets/icons/black/layers.svg" className={style.icon} alt=""/><span className={style.label}>Floorplan</span></Link></li>
+                <li className={style.menuItem}><Link to="/floor-view"><img src="src/assets/icons/black/table_restaurant.svg" className={style.icon} alt=""/><span className={style.label}>Floor view</span></Link></li>
+                <li className={style.menuItem}><Link to="/floorplan"><img src="src/assets/icons/black/layers.svg" className={style.icon} alt=""/><span className={style.label}>Floorplan editor</span></Link></li>
                 <li className={style.menuItem}><Link to="/customers"><img src="src/assets/icons/black/group.svg" className={style.icon} alt=""/><span className={style.label}>Customers</span></Link></li>
                 <li className={style.menuItem}><Link to="/settings"><img src="src/assets/icons/black/settings.svg" className={style.icon} alt=""/><span className={style.label}>Settings</span></Link></li>
                 <li className={`${style.menuItem} ${style.logout}`}><Link to="/" onClick={() => authService.logout()}><span className={style.label}>Logout</span></Link></li>

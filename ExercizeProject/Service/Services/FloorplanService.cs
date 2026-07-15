@@ -3,12 +3,7 @@ using Models.DTOs.Table;
 using Models.Models;
 using Repository.Interfaces;
 using Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Linq;
 
 namespace Service.Services
 {
@@ -19,59 +14,82 @@ namespace Service.Services
             PropertyNameCaseInsensitive = true
         };
 
-        public async Task<FloorPlan> saveFloorPlan(FloorplanDTO floorplanDto)
+        public async Task<FloorplanSaveResultDto?> SaveFloorPlanAsync(FloorplanDTO floorplanDto, Guid organizationId)
         {
+            if (!await floorplanRepository.RoomBelongsToOrganizationAsync(floorplanDto.RoomId, organizationId))
+                return null;
+
             List<TableShapeDto> shapes;
             try
             {
-                shapes = JsonSerializer.Deserialize<List<TableShapeDto>>(floorplanDto.Shapes.GetRawText(), _jsonOptions) ?? new List<TableShapeDto>();
+                shapes = JsonSerializer.Deserialize<List<TableShapeDto>>(
+                    floorplanDto.Shapes.GetRawText(), _jsonOptions) ?? [];
             }
             catch (JsonException je)
             {
-                // rethrow with the raw JSON so the controller can log it for debugging
-                throw new Exception($"Failed to deserialize shapes JSON: {je.Message}. Raw JSON: {floorplanDto.Shapes.GetRawText()}", je);
+                throw new Exception(
+                    $"Failed to deserialize shapes JSON: {je.Message}. Raw JSON: {floorplanDto.Shapes.GetRawText()}", je);
             }
 
-            // map DTOs to your EF entity. Adjust mapping rules to suit your domain.
-            var tables = shapes.Select((s, index) => new Table
+            var tables = MapToTables(shapes);
+
+            var (floorPlan, unassignedCount) = await floorplanRepository.SyncFloorplanAsync(
+                floorplanDto.RoomId, tables);
+
+            return new FloorplanSaveResultDto
             {
-                TableNumber = index + 1, // or derive from DTO if available TODO: consider how to handle table numbering - should it be client-generated or server-generated?
+                FloorPlanId = floorPlan.Id,
+                RoomId = floorPlan.RoomId,
+                TableCount = tables.Count,
+                UnassignedReservationCount = unassignedCount
+            };
+        }
+
+        public async Task<IEnumerable<FloorPlan>?> GetFloorplansForRoomAsync(Guid roomId, Guid organizationId)
+        {
+            if (!await floorplanRepository.RoomBelongsToOrganizationAsync(roomId, organizationId))
+                return null;
+
+            return await floorplanRepository.GetFloorplansForRoom(roomId);
+        }
+
+        private static List<Table> MapToTables(List<TableShapeDto> shapes)
+        {
+            var tables = shapes.Select(s => new Table
+            {
+                // Preserve the client's shape id so the same table keeps its identity — and its
+                // reservations — across saves. Empty means a brand-new shape (DB assigns the id).
+                Id = s.Id,
+                TableNumber = s.TableNumber,
                 X = s.X,
                 Y = s.Y,
                 Rotation = s.Rotation,
                 Type = s.Type ?? string.Empty,
-                // store number of chairs as an int on the entity (preserve layout in DTO if you need it)
                 Chairs = s.Chairs,
-                MinSeats = 1,
-                MaxSeats = s.ChairsLayout?.Count ?? 0,
-                ChairsLayout = s.ChairsLayout ?? new List<int>(),
+                MinSeats = s.Chairs > 0 ? 1 : 0,
+                // A table seats as many chairs as it has. Walls/rooms carry no chairs -> 0 seats.
+                MaxSeats = s.Chairs,
+                ChairsLayout = s.ChairsLayout ?? [],
                 Height = s.Height ?? 0,
                 Width = s.Width ?? 0,
-                Radius = s.Radius ?? 0,
-                //tablenumber
-                // If you need to persist width/height/radius, extend Table entity accordingly
+                Radius = s.Radius ?? 0
             }).ToList();
 
-            var floorPlan = new FloorPlan
-            {
-                Id = Guid.NewGuid(),
-                RoomId = floorplanDto.RoomId,
-                Shapes = tables
-            };
-
-            // ensure tables reference the created floorplan id
-            foreach (var t in floorPlan.Shapes)
-            {
-                t.FloorPlanId = floorPlan.Id;
-            }
-
-            // persist using repository
-            return await floorplanRepository.UpsertFloorplan(floorPlan);
+            AssignMissingTableNumbers(tables);
+            return tables;
         }
 
-        public Task<IEnumerable<FloorPlan>> GetFloorplansForRoom(Guid roomId)
+        // Give any seatable table without a number the next free one, leaving existing numbers intact.
+        private static void AssignMissingTableNumbers(List<Table> tables)
         {
-            return floorplanRepository.GetFloorplansForRoom(roomId);
+            var used = tables.Where(t => t.TableNumber > 0).Select(t => t.TableNumber).ToHashSet();
+            var next = 1;
+            foreach (var table in tables.Where(t => t.MaxSeats > 0 && t.TableNumber <= 0))
+            {
+                while (used.Contains(next)) next++;
+                table.TableNumber = next;
+                used.Add(next);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ import type {
     CreateReservationPayload,
     Reservation,
     ReservationFilters,
+    TableAvailability,
     UpdateReservationPayload,
 } from '../types/reservation';
 
@@ -50,6 +51,27 @@ export class ReservationService {
             await axios.delete(`/reservation/${id}`);
         } catch (error) {
             console.error("Failed to delete reservation:", error);
+            throw error;
+        }
+    }
+
+    static async getAvailableTables(reservationId: string): Promise<TableAvailability[]> {
+        try {
+            const response = await axios.get<TableAvailability[]>(`/reservation/${reservationId}/available-tables`);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch available tables:", error);
+            throw error;
+        }
+    }
+
+    /** Pass null to unassign the reservation from its table. */
+    static async assignTable(reservationId: string, tableId: string | null): Promise<Reservation> {
+        try {
+            const response = await axios.put<Reservation>(`/reservation/${reservationId}/table`, { tableId });
+            return response.data;
+        } catch (error) {
+            console.error("Failed to assign table:", error);
             throw error;
         }
     }

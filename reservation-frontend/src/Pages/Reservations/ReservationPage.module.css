@@ -135,6 +135,47 @@
     font-weight: 500;
 }
 
+.successBanner,
+.warningBanner {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.successBanner {
+    border: 1px solid var(--success-green);
+    background-color: color-mix(in srgb, var(--success-green) 10%, var(--white));
+    color: var(--success-green);
+}
+
+.warningBanner {
+    border: 1px solid var(--warning-orange);
+    background-color: color-mix(in srgb, var(--warning-orange) 12%, var(--white));
+    color: color-mix(in srgb, var(--warning-orange) 80%, var(--black));
+}
+
+.bannerClose {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bannerClose:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+}
+
 .stateCard {
     display: flex;
     flex-direction: column;
@@ -241,6 +282,27 @@
     color: var(--warning-orange);
     font-size: 0.75rem;
     font-weight: 600;
+}
+
+.tableCell {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.linkBtn {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--primary-purple);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.linkBtn:hover {
+    text-decoration: underline;
 }
 
 .actions {
