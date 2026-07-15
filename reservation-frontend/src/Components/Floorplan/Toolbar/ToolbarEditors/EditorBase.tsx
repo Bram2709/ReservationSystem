@@ -6,7 +6,7 @@ interface EditorBaseProps {
     children?: React.ReactNode;
 }
 
-export function EditorBase({ title, tip, children }: EditorBaseProps) {
+export function EditorBase({ title, children }: EditorBaseProps) {
     return (
         <div className={style.popout}>
             <div className={style.header}>

@@ -9,7 +9,7 @@ interface SideBarProps {
     onToggleCollapse: () => void;
 }
 
-export function SideBar({ isOpen, onClose, isCollapsed, onToggleCollapse }: SideBarProps) {
+export function SideBar({ isOpen, isCollapsed, onToggleCollapse }: SideBarProps) {
     const wrapperClass = [
         style.wrapper,
         isOpen ? style.open : "",
@@ -30,12 +30,8 @@ export function SideBar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
             <ul className={style.list}>
                 <li className={style.menuItem}><Link to="/dashboard"><img src="src/assets/icons/black/dashboard.svg" className={style.icon} alt=""/><span className={style.label}>Overview</span></Link></li>
                 <li className={style.menuItem}><Link to="/reservations"><img src="src/assets/icons/black/calendar.svg" className={style.icon} alt=""/><span className={style.label}>Reservations</span></Link></li>
-                <li className={style.menuItem}><Link to="/layout"><img src="src/assets/icons/black/fork.svg" className={style.icon} alt=""/><span className={style.label}>Rooms/Tables</span></Link></li>
-                
-                <li className={style.menuItem}><Link to="/restaurants"><img src="src/assets/icons/black/calendar.svg" className={style.icon} alt=""/><span className={style.label}>Restaurants</span></Link></li>
-                <li className={style.menuItem}><Link to="/rooms"><img src="src/assets/icons/black/calendar.svg" className={style.icon} alt=""/><span className={style.label}>Rooms</span></Link></li>
-
-
+                {/* Rooms are managed inside their restaurant, so there is no separate Rooms entry. */}
+                <li className={style.menuItem}><Link to="/restaurants"><img src="src/assets/icons/black/fork.svg" className={style.icon} alt=""/><span className={style.label}>Restaurants</span></Link></li>
                 <li className={style.menuItem}><Link to="/floorplan"><img src="src/assets/icons/black/layers.svg" className={style.icon} alt=""/><span className={style.label}>Floorplan</span></Link></li>
                 <li className={style.menuItem}><Link to="/customers"><img src="src/assets/icons/black/group.svg" className={style.icon} alt=""/><span className={style.label}>Customers</span></Link></li>
                 <li className={style.menuItem}><Link to="/settings"><img src="src/assets/icons/black/settings.svg" className={style.icon} alt=""/><span className={style.label}>Settings</span></Link></li>

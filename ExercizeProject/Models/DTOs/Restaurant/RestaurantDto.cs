@@ -13,7 +13,13 @@ namespace Models.DTOs.Restaurant
         public Guid Id { get; set; }
         public required string Name { get; set; }
         public bool IsActive { get; set; }
+        public Guid RestaurantId { get; set; }
         public FloorPlanDto? FloorPlan { get; set; }
+
+        // Derived from the room's floorplan rather than stored: a room's capacity is
+        // whatever its tables can actually seat.
+        public int TableCount { get; set; }
+        public int Seats { get; set; }
     }
 
     public class FloorPlanDto

@@ -1,55 +1,71 @@
-﻿using Service.Interface;
-using Models.Models;
-using Repository.Interfaces;
+﻿using Models.DTOs.Restaurant;
 using Models.DTOs.Room;
+using Models.Enums;
+using Repository.Interfaces;
+using Service.Interface;
+using Service.Mapping;
+using Entities = Models.Models;
 
 namespace Service.Services
 {
     public class RoomService(IRoomRepository roomRepository) : IRoomService
     {
-        public async Task<IEnumerable<Room>> GetAllAsync()
+        public async Task<IEnumerable<RoomDto>> GetAllAsync(Guid organizationId, Guid? restaurantId = null)
         {
-            return await roomRepository.GetAllAsync();
+            var rooms = await roomRepository.GetAllAsync(organizationId, restaurantId);
+            return rooms.Select(RestaurantMapping.ToDto);
         }
 
-        public async Task<Room?> GetByIdAsync(int id)
+        public async Task<RoomDto?> GetByIdAsync(Guid id, Guid organizationId)
         {
-            return await roomRepository.GetByIdAsync(id);
+            var room = await roomRepository.GetByIdAsync(id, organizationId);
+            return room is null ? null : RestaurantMapping.ToDto(room);
         }
 
-        public async Task<Room> CreateAsync(CreateRoomDto roomDto)
+        public async Task<RoomDto?> CreateAsync(CreateRoomDto roomDto, Guid organizationId)
         {
-            Room room = new()
+            if (!await roomRepository.RestaurantBelongsToOrganizationAsync(roomDto.RestaurantId, organizationId))
+                return null;
+
+            Entities.Room room = new()
             {
-                IsActive = roomDto.IsActive,
                 Name = roomDto.Name,
+                IsActive = roomDto.IsActive,
                 RestaurantId = roomDto.RestaurantId
             };
 
-            return await roomRepository.CreateAsync(room);
+            var created = await roomRepository.CreateAsync(room);
+            return RestaurantMapping.ToDto(created);
         }
 
-        public async Task<Room> UpdateAsync(UpdateRoomDto roomDto)
+        public async Task<RoomDto?> UpdateAsync(UpdateRoomDto roomDto, Guid organizationId)
         {
-            Room room = new()
-            {
-                Id = roomDto.Id,
-                IsActive = roomDto.IsActive,
-                Name = roomDto.Name,
-                RestaurantId = roomDto.RestaurantId
-            };
+            // Load the existing row rather than constructing a detached entity, so RestaurantId
+            // and the room's floorplan link survive the update.
+            var room = await roomRepository.GetByIdAsync(roomDto.Id, organizationId);
+            if (room is null)
+                return null;
 
-            return await roomRepository.UpdateAsync(room);
+            room.Name = roomDto.Name;
+            room.IsActive = roomDto.IsActive;
+
+            var updated = await roomRepository.UpdateAsync(room);
+            return RestaurantMapping.ToDto(updated);
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<DeleteOutcome> DeleteAsync(Guid id, Guid organizationId)
         {
-            return await roomRepository.DeleteAsync(id);
-        }
+            var room = await roomRepository.GetByIdAsync(id, organizationId);
+            if (room is null)
+                return DeleteOutcome.NotFound;
 
-        public Task OrganizeAsync(int roomId)
-        {
-            throw new NotImplementedException();
+            // Deleting a room cascades its floorplan and tables away. Refuse while reservations
+            // are still seated at those tables.
+            if (await roomRepository.HasReservationsAsync(id))
+                return DeleteOutcome.Blocked;
+
+            await roomRepository.DeleteAsync(room);
+            return DeleteOutcome.Deleted;
         }
     }
 }

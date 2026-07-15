@@ -50,6 +50,7 @@
 }
 
 .ghostBtn {
+    display: inline-block;
     padding: 6px 12px;
     border: 1px solid var(--deep-cool-background-grey);
     border-radius: 6px;
@@ -57,6 +58,8 @@
     color: var(--slate-grey);
     font-size: 0.8125rem;
     font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
     transition: border-color 0.15s ease, color 0.15s ease;
 }
@@ -83,44 +86,8 @@
     color: var(--white);
     font-size: 0.8125rem;
     font-weight: 600;
+    white-space: nowrap;
     cursor: pointer;
-}
-
-/* --- Filters --- */
-
-.filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-    padding: 16px;
-    border: 1px solid var(--deep-cool-background-grey);
-    border-radius: 8px;
-    background-color: var(--white);
-    box-shadow: 0 12px 32px rgba(9, 11, 12, 0.04);
-}
-
-.search {
-    flex: 1 1 240px;
-    min-width: 0;
-}
-
-.search,
-.filterField {
-    padding: 9px 12px;
-    border: 1px solid var(--deep-cool-background-grey);
-    border-radius: 6px;
-    background-color: var(--neutral-background-grey);
-    color: var(--deep-charcoal);
-    font-size: 0.875rem;
-    font-family: inherit;
-}
-
-.search:focus,
-.filterField:focus {
-    outline: 2px solid var(--primary-purple);
-    outline-offset: -1px;
-    background-color: var(--white);
 }
 
 /* --- States --- */
@@ -138,7 +105,7 @@
 .stateCard {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
     padding: 56px 24px;
     border: 1px dashed var(--muted-purple-tone);
@@ -156,98 +123,202 @@
 }
 
 .emptyBody {
+    margin-bottom: 8px;
     color: var(--slate-grey);
     font-size: 0.875rem;
     font-weight: 400;
 }
 
-/* --- Table --- */
+/* --- Restaurant cards --- */
 
-.tableScroll {
-    overflow-x: auto;
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
     border: 1px solid var(--deep-cool-background-grey);
     border-radius: 8px;
     background-color: var(--white);
     box-shadow: 0 12px 32px rgba(9, 11, 12, 0.04);
 }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
+.cardHead {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
 }
 
-.table thead th {
-    padding: 12px 12px;
-    background-color: var(--neutral-background-grey);
-    border-bottom: 1px solid var(--deep-cool-background-grey);
-    color: var(--slate-grey);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-align: left;
-    text-transform: uppercase;
-    white-space: nowrap;
+.cardHeadText {
+    min-width: 0;
 }
 
-.table tbody td {
-    padding: 14px 12px;
-    border-bottom: 1px solid var(--deep-cool-background-grey);
+.restaurantName {
+    font-size: 1.125rem;
+    font-weight: 700;
     color: var(--deep-charcoal);
-    vertical-align: top;
+    overflow-wrap: anywhere;
 }
 
-.table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.table tbody tr:hover {
-    background-color: var(--neutral-background-grey);
-}
-
-.guestName {
-    font-weight: 600;
-    color: var(--deep-charcoal);
-}
-
-.guestMeta {
+.address {
     margin-top: 2px;
     color: var(--slate-grey);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 400;
 }
 
-.badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
-    background-color: var(--muted-purple-tone);
+.cardActions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* --- Stats strip --- */
+
+.stats {
+    display: flex;
+    gap: 8px;
+}
+
+.stat {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background-color: var(--neutral-background-grey);
+    text-align: center;
+}
+
+.stat dt {
+    color: var(--slate-grey);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.stat dd {
+    margin-top: 2px;
+    color: var(--deep-charcoal);
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+/* --- Rooms --- */
+
+.roomsHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 4px;
+    border-top: 1px solid var(--deep-cool-background-grey);
+}
+
+.roomsTitle {
+    padding-top: 8px;
+    color: var(--slate-grey);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.addRoomBtn {
+    margin-top: 8px;
+    padding: 5px 10px;
+    border: 1px dashed var(--muted-purple-tone);
+    border-radius: 6px;
+    background-color: var(--white);
     color: var(--primary-purple);
     font-size: 0.75rem;
     font-weight: 600;
-    white-space: nowrap;
+    cursor: pointer;
 }
 
-.tableBadge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
-    background-color: color-mix(in srgb, var(--success-green) 14%, var(--white));
-    color: var(--success-green);
-    font-size: 0.75rem;
-    font-weight: 600;
+.addRoomBtn:hover {
+    border-style: solid;
+    background-color: var(--muted-purple-tone);
 }
 
-.unassigned {
-    color: var(--warning-orange);
-    font-size: 0.75rem;
-    font-weight: 600;
+.noRooms {
+    padding: 14px;
+    border: 1px dashed var(--deep-cool-background-grey);
+    border-radius: 6px;
+    color: var(--slate-grey);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    text-align: center;
 }
 
-.actions {
+.roomList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.roomItem {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 6px;
+    background-color: var(--neutral-background-grey);
+}
+
+.roomMain {
     display: flex;
     gap: 8px;
-    justify-content: flex-end;
+    align-items: center;
+    min-width: 0;
+}
+
+.roomName {
+    color: var(--deep-charcoal);
+    font-size: 0.875rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.activePill,
+.inactivePill {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
     white-space: nowrap;
+}
+
+.activePill {
+    background-color: color-mix(in srgb, var(--success-green) 14%, var(--white));
+    color: var(--success-green);
+}
+
+.inactivePill {
+    background-color: color-mix(in srgb, var(--warning-orange) 14%, var(--white));
+    color: var(--warning-orange);
+}
+
+.roomMeta {
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.roomActions {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
 }
 
 @media screen and (width < 760px) {
@@ -255,18 +326,7 @@
         padding: 16px;
     }
 
-    .filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    /* Stacked, the 240px flex-basis would apply to height instead of width. */
-    .search {
-        flex: 0 0 auto;
-    }
-
-    .search,
-    .filterField {
-        width: 100%;
+    .grid {
+        grid-template-columns: 1fr;
     }
 }

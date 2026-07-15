@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Models.DTOs.Restaurant;
-using Models.Models;
+﻿using Models.DTOs.Restaurant;
+using Models.Enums;
 
 namespace Service.Interface
 {
     public interface IRestaurantService
     {
-        Task<IEnumerable<Restaurant>> GetAllAsync();
-        Task<Restaurant?> GetByIdAsync(int id);
-        Task<Restaurant> CreateAsync(CreateRestaurantDto restaurantDto, Guid organizationId);
-        Task<Restaurant> UpdateAsync(UpdateRestaurantDto restaurantDto);
-        Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<RestaurantDto>> GetAllRestaurantsFromUserAsync(Guid organizationId);
 
-        Task<IEnumerable<RestaurantDto>> GetAllRestaurantsFromUserAsync(Guid userId);
+        Task<RestaurantDto?> GetByIdAsync(Guid id, Guid organizationId);
 
-        Task OrganizeAsync(int restaurantId);
-        Task MoveReservationAsync(int reservationId, int newTableId);
+        Task<RestaurantDto> CreateAsync(CreateRestaurantDto restaurantDto, Guid organizationId);
+
+        // Null when the restaurant does not exist for this organization.
+        Task<RestaurantDto?> UpdateAsync(UpdateRestaurantDto restaurantDto, Guid organizationId);
+
+        Task<DeleteOutcome> DeleteAsync(Guid id, Guid organizationId);
     }
 }

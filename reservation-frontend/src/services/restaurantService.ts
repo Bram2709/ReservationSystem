@@ -1,5 +1,9 @@
 import axios from 'axios';
-import type { Restaurant } from '../types/restaurant';
+import type {
+    CreateRestaurantPayload,
+    Restaurant,
+    UpdateRestaurantPayload,
+} from '../types/restaurant';
 
 export class RestaurantService {
     static async getRestaurants(): Promise<Restaurant[]> {
@@ -12,18 +16,31 @@ export class RestaurantService {
         }
     }
 
-    static async createRestaurant(name: string): Promise<Restaurant> {
+    static async createRestaurant(payload: CreateRestaurantPayload): Promise<Restaurant> {
         try {
-            const fromData = new FormData();
-            fromData.append('name', name);
-            const response = await axios.post('/restaurant', fromData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            const response = await axios.post<Restaurant>('/restaurant', payload);
             return response.data;
         } catch (error) {
             console.error("Failed to create restaurant:", error);
+            throw error;
+        }
+    }
+
+    static async updateRestaurant(payload: UpdateRestaurantPayload): Promise<Restaurant> {
+        try {
+            const response = await axios.put<Restaurant>(`/restaurant/${payload.id}`, payload);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to update restaurant:", error);
+            throw error;
+        }
+    }
+
+    static async deleteRestaurant(id: string): Promise<void> {
+        try {
+            await axios.delete(`/restaurant/${id}`);
+        } catch (error) {
+            console.error("Failed to delete restaurant:", error);
             throw error;
         }
     }

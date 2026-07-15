@@ -1,11 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Models.DTOs.Restaurant
 {
     public class CreateRestaurantDto
     {
+        [Required]
+        [StringLength(100, MinimumLength = 2)]
         public string Name { get; set; } = string.Empty;
+
+        [StringLength(200)]
+        public string? Address { get; set; }
     }
 }

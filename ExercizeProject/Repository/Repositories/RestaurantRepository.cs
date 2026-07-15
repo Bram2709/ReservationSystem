@@ -1,22 +1,30 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Models.Models;
 using Repository.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Repository.Repositories
 {
     public class RestaurantRepository(ApplicationDbContext context) : IRestaurantRepository
     {
-        public async Task<Restaurant?> GetByIdAsync(int id)
+        public async Task<IEnumerable<Restaurant>> GetAllRestaurantsFromUserAsync(Guid organizationId)
         {
-            return await context.Restaurants.FindAsync(id);
+            return await context.Restaurants
+                .Where(r => r.OrganizationId == organizationId)
+                .Include(r => r.Rooms)
+                    .ThenInclude(room => room.FloorPlan)
+                        .ThenInclude(fp => fp!.Shapes)
+                .OrderBy(r => r.Name)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public async Task<IEnumerable<Restaurant>> GetAllAsync()
+        public async Task<Restaurant?> GetByIdAsync(Guid id, Guid organizationId)
         {
-            return await context.Restaurants.ToListAsync();
+            return await context.Restaurants
+                .Include(r => r.Rooms)
+                    .ThenInclude(room => room.FloorPlan)
+                        .ThenInclude(fp => fp!.Shapes)
+                .FirstOrDefaultAsync(r => r.Id == id && r.OrganizationId == organizationId);
         }
 
         public async Task<Restaurant> CreateAsync(Restaurant restaurant)
@@ -25,36 +33,29 @@ namespace Repository.Repositories
             await context.SaveChangesAsync();
             return restaurant;
         }
-            
+
         public async Task<Restaurant> UpdateAsync(Restaurant restaurant)
         {
-            var result = context.Restaurants.Update(restaurant);
             await context.SaveChangesAsync();
-            return result.Entity;
+            return restaurant;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(Restaurant restaurant)
         {
-            var restaurant = await context.Restaurants.FindAsync(id);
-
-            if (restaurant == null)
-            {
-                return false;
-            }
-
             context.Restaurants.Remove(restaurant);
             await context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<IEnumerable<Restaurant>> GetAllRestaurantsFromUserAsync(Guid userId)
+        public async Task<bool> HasRoomsAsync(Guid restaurantId)
         {
-            return await context.Restaurants
-                .Where(a => a.OrganizationId == userId)
-                .Include(r => r.Rooms)
-                    .ThenInclude(room => room.FloorPlan)
-                        .ThenInclude(fp => fp!.Shapes)
-                .ToListAsync();
+            return await context.Rooms.AnyAsync(r => r.RestaurantId == restaurantId);
+        }
+
+        public async Task<bool> HasReservationsAsync(Guid restaurantId)
+        {
+            return await context.Reservations
+                .AnyAsync(r => r.RestaurantId == restaurantId && !r.IsDeleted);
         }
     }
 }

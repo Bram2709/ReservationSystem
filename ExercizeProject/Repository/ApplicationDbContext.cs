@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Models.Models;
 using System.Text.Json;
 
@@ -27,6 +28,26 @@ namespace Repository
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                     v => JsonSerializer.Deserialize<List<int>>(v) ?? new List<int>()
                 );
+
+            // SQL Server's datetime2 carries no timezone, so EF hands these back as
+            // DateTimeKind.Unspecified and they serialize without a trailing 'Z'. The browser
+            // then reads them as local time and every reservation is shown offset from the real
+            // one. Reservation timestamps are always written as UTC, so tag them as UTC on read.
+            var utc = new ValueConverter<DateTime, DateTime>(
+                v => v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+            var nullableUtc = new ValueConverter<DateTime?, DateTime?>(
+                v => v.HasValue ? v.Value.ToUniversalTime() : v,
+                v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+            modelBuilder.Entity<Reservation>(reservation =>
+            {
+                reservation.Property(r => r.ReservationDateTime).HasConversion(utc);
+                reservation.Property(r => r.CreatedAt).HasConversion(utc);
+                reservation.Property(r => r.UpdatedAt).HasConversion(nullableUtc);
+                reservation.Property(r => r.DeletedAt).HasConversion(nullableUtc);
+            });
         }
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)

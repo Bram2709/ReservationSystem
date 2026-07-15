@@ -5,6 +5,7 @@ import style from "./Floorplan.module.css";
 import { FloorplanService } from "../../services/floorplanService";
 import { useRestaurants } from "../../hooks/useRestaurants";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
 export function Floorplan() {
   const {
@@ -25,7 +26,10 @@ export function Floorplan() {
   } = useFloorplan();
 
   const { restaurants } = useRestaurants();
-  const [selectedRoomId, setSelectedRoomId] = useState<string>("");
+
+  // The Restaurants page links here with ?roomId=… to jump straight to a room's floorplan.
+  const [searchParams] = useSearchParams();
+  const [selectedRoomId, setSelectedRoomId] = useState<string>(searchParams.get("roomId") ?? "");
 
   // derive flat list of rooms with restaurant name
   const rooms = restaurants.flatMap(r => r.rooms.map(room => ({ ...room, restaurantName: r.name })));

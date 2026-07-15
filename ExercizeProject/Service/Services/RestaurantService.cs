@@ -1,95 +1,70 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Models.DTOs.Restaurant;
-using Models.Models;
+﻿using Models.DTOs.Restaurant;
+using Models.Enums;
 using Repository.Interfaces;
 using Service.Interface;
+using Service.Mapping;
+using Entities = Models.Models;
 
 namespace Service.Services
 {
     public class RestaurantService(IRestaurantRepository restaurantRepository) : IRestaurantService
     {
-        public async Task<IEnumerable<Restaurant>> GetAllAsync()
+        public async Task<IEnumerable<RestaurantDto>> GetAllRestaurantsFromUserAsync(Guid organizationId)
         {
-            return await restaurantRepository.GetAllAsync();
+            var restaurants = await restaurantRepository.GetAllRestaurantsFromUserAsync(organizationId);
+            return restaurants.Select(ToDto);
         }
 
-        public async Task<Restaurant?> GetByIdAsync(int id)
+        public async Task<RestaurantDto?> GetByIdAsync(Guid id, Guid organizationId)
         {
-            return await restaurantRepository.GetByIdAsync(id);
+            var restaurant = await restaurantRepository.GetByIdAsync(id, organizationId);
+            return restaurant is null ? null : ToDto(restaurant);
         }
 
-        public async Task<Restaurant> CreateAsync(CreateRestaurantDto restaurantDto, Guid organizationId)
+        public async Task<RestaurantDto> CreateAsync(CreateRestaurantDto restaurantDto, Guid organizationId)
         {
-            Restaurant restaurant = new()
+            Entities.Restaurant restaurant = new()
             {
                 Name = restaurantDto.Name,
+                Address = restaurantDto.Address,
                 OrganizationId = organizationId
             };
 
-            return await restaurantRepository.CreateAsync(restaurant);
+            var created = await restaurantRepository.CreateAsync(restaurant);
+            return ToDto(created);
         }
 
-        public async Task<Restaurant> UpdateAsync(UpdateRestaurantDto restaurantDto)
+        public async Task<RestaurantDto?> UpdateAsync(UpdateRestaurantDto restaurantDto, Guid organizationId)
         {
-            Restaurant restaurant = new()
-            {
-                Id = restaurantDto.Id,
-                Name = restaurantDto.Name
-            };
+            // Load the existing row rather than constructing a detached entity: saving a partially
+            // populated Restaurant would blank out OrganizationId and Address.
+            var restaurant = await restaurantRepository.GetByIdAsync(restaurantDto.Id, organizationId);
+            if (restaurant is null)
+                return null;
 
-            return await restaurantRepository.UpdateAsync(restaurant);
+            restaurant.Name = restaurantDto.Name;
+            restaurant.Address = restaurantDto.Address;
+
+            var updated = await restaurantRepository.UpdateAsync(restaurant);
+            return ToDto(updated);
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<DeleteOutcome> DeleteAsync(Guid id, Guid organizationId)
         {
-            return await restaurantRepository.DeleteAsync(id);
+            var restaurant = await restaurantRepository.GetByIdAsync(id, organizationId);
+            if (restaurant is null)
+                return DeleteOutcome.NotFound;
+
+            // Rooms and reservations cascade from Restaurant. Refuse rather than quietly
+            // destroying them — the caller has to clear them out first.
+            if (await restaurantRepository.HasRoomsAsync(id) ||
+                await restaurantRepository.HasReservationsAsync(id))
+                return DeleteOutcome.Blocked;
+
+            await restaurantRepository.DeleteAsync(restaurant);
+            return DeleteOutcome.Deleted;
         }
 
-        public Task OrganizeAsync(int restaurantId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task MoveReservationAsync(int reservationId, int newTableId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<IEnumerable<RestaurantDto>> GetAllRestaurantsFromUserAsync(Guid userId)
-        {
-            var restaurants = await restaurantRepository.GetAllRestaurantsFromUserAsync(userId);
-
-            return restaurants.Select(r => new RestaurantDto
-            {
-                Id = r.Id,
-                Name = r.Name,
-                Address = r.Address,
-                Rooms = r.Rooms.Select(room => new RoomDto
-                {
-                    Id = room.Id,
-                    Name = room.Name,
-                    IsActive = room.IsActive,
-                    FloorPlan = room.FloorPlan == null ? null : new FloorPlanDto
-                    {
-                        Id = room.FloorPlan.Id,
-                        Shapes = room.FloorPlan.Shapes.Select(t => new TableDto
-                        {
-                            Id = t.Id,
-                            TableNumber = t.TableNumber,
-                            MinSeats = t.MinSeats,
-                            MaxSeats = t.MaxSeats,
-                            X = t.X,
-                            Y = t.Y,
-                            Chairs = t.Chairs,
-                            Rotation = t.Rotation,
-                            Type = t.Type
-                        }).ToList()
-                    }
-                }).ToList()
-            });
-        }
+        private static RestaurantDto ToDto(Entities.Restaurant r) => RestaurantMapping.ToDto(r);
     }
 }
