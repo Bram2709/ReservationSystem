@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { SideBar } from "../SideBar/SideBar";
 import { TopBar } from "../TopBar/TopBar";
+import { RestaurantsProvider } from "../../../context/RestaurantsContext";
 import style from "./AppLayout.module.css";
 
 export interface AppLayoutProps {
@@ -12,7 +13,10 @@ export function AppLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+    // Mounted here (above the page Outlet) so the restaurants cache loads once and survives
+    // navigation between pages, instead of re-fetching on every page mount.
     return (
+        <RestaurantsProvider>
         <div className={style.wrapper}>
             <SideBar
                 isOpen={sidebarOpen}
@@ -30,5 +34,6 @@ export function AppLayout() {
                 </div>
             </div>
         </div>
+        </RestaurantsProvider>
     );
 }

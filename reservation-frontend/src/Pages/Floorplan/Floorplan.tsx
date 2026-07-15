@@ -26,7 +26,7 @@ export function Floorplan() {
     createRoom
   } = useFloorplan();
 
-  const { restaurants } = useRestaurants();
+  const { restaurants, refresh: refreshRestaurants } = useRestaurants();
 
   // The Restaurants page links here with ?roomId=… to jump straight to a room's floorplan.
   const [searchParams] = useSearchParams();
@@ -71,6 +71,8 @@ export function Floorplan() {
     if (!selectedRoomId) return;
     try {
       const result = await FloorplanService.saveFloorplan(shapes, selectedRoomId);
+      // Tables changed — refresh the shared cache so Floor view and room counts stay accurate.
+      void refreshRestaurants();
       const unassigned = result.unassignedReservationCount;
       setSaveNotice(
         unassigned > 0

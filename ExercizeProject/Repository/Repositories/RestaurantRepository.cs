@@ -8,12 +8,15 @@ namespace Repository.Repositories
     {
         public async Task<IEnumerable<Restaurant>> GetAllRestaurantsFromUserAsync(Guid organizationId)
         {
+            // Split query: Rooms and Shapes are both collections, so a single joined query would
+            // multiply rows (restaurants × rooms × tables). Splitting keeps each result set small.
             return await context.Restaurants
                 .Where(r => r.OrganizationId == organizationId)
                 .Include(r => r.Rooms)
                     .ThenInclude(room => room.FloorPlan)
                         .ThenInclude(fp => fp!.Shapes)
                 .OrderBy(r => r.Name)
+                .AsSplitQuery()
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -24,6 +27,7 @@ namespace Repository.Repositories
                 .Include(r => r.Rooms)
                     .ThenInclude(room => room.FloorPlan)
                         .ThenInclude(fp => fp!.Shapes)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(r => r.Id == id && r.OrganizationId == organizationId);
         }
 

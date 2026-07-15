@@ -18,7 +18,7 @@ export function LoginPage() {
         setIsLoading(true);
         try {
             await login(email, password);
-            navigate("/dashboardnew");
+            navigate("/dashboard");
         } catch {
             setError("Invalid email or password.");
         } finally {
