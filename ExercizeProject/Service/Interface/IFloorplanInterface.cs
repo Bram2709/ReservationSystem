@@ -1,5 +1,4 @@
 ﻿using Models.DTOs;
-using Models.Models;
 
 namespace Service.Interface
 {
@@ -7,7 +6,5 @@ namespace Service.Interface
     {
         // Null when the room is not owned by the caller's organization.
         Task<FloorplanSaveResultDto?> SaveFloorPlanAsync(FloorplanDTO floorplanDto, Guid organizationId);
-
-        Task<IEnumerable<FloorPlan>?> GetFloorplansForRoomAsync(Guid roomId, Guid organizationId);
     }
 }

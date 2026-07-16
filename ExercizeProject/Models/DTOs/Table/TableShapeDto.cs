@@ -26,5 +26,13 @@ namespace Models.DTOs.Table
 
         // incoming chairs layout is an array in your JSON
         public List<int>? ChairsLayout { get; set; }
+
+        // Explicit seat range. Nullable so older payloads without them still work — the
+        // service falls back to deriving both from Chairs.
+        public int? MinSeats { get; set; }
+        public int? MaxSeats { get; set; }
+
+        // Flattened [x1,y1,...] polygon for the "room-outline" shape; null/empty otherwise.
+        public List<double>? Points { get; set; }
     }
 }

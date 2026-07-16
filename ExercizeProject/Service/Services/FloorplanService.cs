@@ -45,14 +45,6 @@ namespace Service.Services
             };
         }
 
-        public async Task<IEnumerable<FloorPlan>?> GetFloorplansForRoomAsync(Guid roomId, Guid organizationId)
-        {
-            if (!await floorplanRepository.RoomBelongsToOrganizationAsync(roomId, organizationId))
-                return null;
-
-            return await floorplanRepository.GetFloorplansForRoom(roomId);
-        }
-
         private static List<Table> MapToTables(List<TableShapeDto> shapes)
         {
             var tables = shapes.Select(s => new Table
@@ -66,13 +58,15 @@ namespace Service.Services
                 Rotation = s.Rotation,
                 Type = s.Type ?? string.Empty,
                 Chairs = s.Chairs,
-                MinSeats = s.Chairs > 0 ? 1 : 0,
-                // A table seats as many chairs as it has. Walls/rooms carry no chairs -> 0 seats.
-                MaxSeats = s.Chairs,
+                // Prefer the client's explicit seat range; fall back to deriving from chair
+                // count for older payloads. Walls/outlines carry no chairs -> 0 seats.
+                MinSeats = s.MinSeats ?? (s.Chairs > 0 ? 1 : 0),
+                MaxSeats = s.MaxSeats ?? s.Chairs,
                 ChairsLayout = s.ChairsLayout ?? [],
                 Height = s.Height ?? 0,
                 Width = s.Width ?? 0,
-                Radius = s.Radius ?? 0
+                Radius = s.Radius ?? 0,
+                Points = s.Points ?? []
             }).ToList();
 
             AssignMissingTableNumbers(tables);

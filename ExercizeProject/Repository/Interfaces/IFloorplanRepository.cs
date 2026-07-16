@@ -6,8 +6,6 @@ namespace Repository.Interfaces
     {
         Task<bool> RoomBelongsToOrganizationAsync(Guid roomId, Guid organizationId);
 
-        Task<IEnumerable<FloorPlan>> GetFloorplansForRoom(Guid roomId);
-
         /// <summary>
         /// Reconciles the room's floorplan with the desired set of tables, matching by table Id:
         /// existing tables are updated in place (preserving reservation links), new ones inserted,

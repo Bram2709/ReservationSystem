@@ -43,5 +43,6 @@ namespace Models.DTOs.Restaurant
         public int Height { get; set; }
         public int Radius { get; set; }
         public List<int> ChairsLayout { get; set; } = [];
+        public List<double> Points { get; set; } = [];
     }
 }

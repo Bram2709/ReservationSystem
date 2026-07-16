@@ -25,5 +25,9 @@ namespace Models.Models
         public FloorPlan? FloorPlan { get; set; }
         public List<int> ChairsLayout { get; set; } = new List<int>();
 
+        // Polygon vertices as a flattened [x1,y1,x2,y2,...] list. Only used by the
+        // "room-outline" shape; empty for every other shape type.
+        public List<double> Points { get; set; } = new List<double>();
+
     }
 }

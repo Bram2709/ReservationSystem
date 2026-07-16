@@ -13,15 +13,6 @@ namespace Repository.Repositories
                 .AnyAsync(r => r.Id == roomId && r.Restaurant!.OrganizationId == organizationId);
         }
 
-        public async Task<IEnumerable<FloorPlan>> GetFloorplansForRoom(Guid roomId)
-        {
-            return await context.FloorPlans
-                .Include(fp => fp.Shapes)
-                .Where(fp => fp.RoomId == roomId)
-                .AsNoTracking()
-                .ToListAsync();
-        }
-
         public async Task<(FloorPlan FloorPlan, int UnassignedReservationCount)> SyncFloorplanAsync(
             Guid roomId, IReadOnlyList<Table> desiredTables)
         {
@@ -83,6 +74,7 @@ namespace Repository.Repositories
                     current.Height = desired.Height;
                     current.Radius = desired.Radius;
                     current.ChairsLayout = desired.ChairsLayout;
+                    current.Points = desired.Points;
                 }
                 else
                 {

@@ -34,6 +34,7 @@ export interface FloorplanTable {
     height: number;
     radius: number;
     chairsLayout: number[];
+    points: number[];
 }
 
 // Mirrors Models.DTOs.Restaurant.FloorPlanDto
