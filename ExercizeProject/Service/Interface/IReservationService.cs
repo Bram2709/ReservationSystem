@@ -1,8 +1,11 @@
-﻿using Models.DTOs.Reservation;
+﻿using Models.DTOs.Customer;
+using Models.DTOs.Reservation;
 using Models.Enums;
 
 namespace Service.Interface
 {
+    public record ReservationCreateResult(CreateReservationOutcome Outcome, ReservationDto? Reservation);
+
     public interface IReservationService
     {
         Task<IEnumerable<ReservationDto>> GetAllAsync(
@@ -14,15 +17,17 @@ namespace Service.Interface
 
         Task<ReservationDto?> GetByIdAsync(Guid id, Guid organizationId);
 
-        // Null when the target restaurant or table is not owned by this organization.
-        // When no table is supplied, tries to auto-assign an available one; the returned
-        // reservation's TableId is null when nothing was free for the slot.
-        Task<ReservationDto?> CreateAsync(CreateReservationDto reservationDto, Guid organizationId);
+        // Validates ownership, service window, and covers cap; auto-assigns a table when
+        // none is supplied (unless waitlisted).
+        Task<ReservationCreateResult> CreateAsync(CreateReservationDto reservationDto, Guid organizationId);
 
         // Null when the reservation does not exist for this organization, or the table is not owned by it.
         Task<ReservationDto?> UpdateAsync(UpdateReservationDto reservationDto, Guid organizationId);
 
         Task<bool> DeleteAsync(Guid id, Guid organizationId);
+
+        // Null when the reservation does not exist for this organization.
+        Task<ReservationDto?> UpdateStatusAsync(Guid id, ReservationStatus status, Guid organizationId);
 
         // Every seatable table in the reservation's restaurant, flagged for fit and occupancy.
         // Null when the reservation does not exist for this organization.
@@ -31,5 +36,7 @@ namespace Service.Interface
         // Assigns (or clears, when tableId is null) the reservation's table.
         Task<(AssignTableOutcome Outcome, ReservationDto? Reservation)> AssignTableAsync(
             Guid reservationId, Guid? tableId, Guid organizationId);
+
+        Task<IReadOnlyList<CustomerDto>> GetCustomersAsync(Guid organizationId);
     }
 }

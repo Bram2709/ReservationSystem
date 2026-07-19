@@ -69,6 +69,7 @@ namespace Repository
                 reservation.Property(r => r.CreatedAt).HasConversion(utc);
                 reservation.Property(r => r.UpdatedAt).HasConversion(nullableUtc);
                 reservation.Property(r => r.DeletedAt).HasConversion(nullableUtc);
+                reservation.Property(r => r.ReminderSentAt).HasConversion(nullableUtc);
             });
         }
 

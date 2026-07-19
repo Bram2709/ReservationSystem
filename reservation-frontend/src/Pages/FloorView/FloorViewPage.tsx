@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRestaurants } from "../../hooks/useRestaurants";
 import { useReservations } from "../../hooks/useReservations";
-import { TIME_FRAME_LABELS, TimeFrame } from "../../types/reservation";
-import type { Reservation, ReservationFilters } from "../../types/reservation";
+import { ACTIVE_STATUSES, ReservationStatus, STATUS_LABELS, TIME_FRAME_LABELS, TimeFrame } from "../../types/reservation";
+import type { ReservationFilters } from "../../types/reservation";
 import type { FloorplanTable } from "../../types/restaurant";
 import { FloorViewCanvas } from "../../Components/Floorplan/FloorViewCanvas/FloorViewCanvas";
-import { apiErrorMessage } from "../../utils/apiError";
+import { TableDetailsModal } from "./TableDetailsModal";
 import style from "./FloorViewPage.module.css";
 
 function todayIso(): string {
@@ -24,12 +24,18 @@ function timeOf(iso: string): string {
     return new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 }
 
-const SERVICES: TimeFrame[] = [TimeFrame.Breakfast, TimeFrame.Lunch, TimeFrame.Dinner];
+type ServiceFilter = TimeFrame | "all";
+
+const SERVICE_TABS: { value: ServiceFilter; label: string }[] = [
+    { value: "all", label: "All day" },
+    { value: TimeFrame.Breakfast, label: TIME_FRAME_LABELS[TimeFrame.Breakfast] },
+    { value: TimeFrame.Lunch, label: TIME_FRAME_LABELS[TimeFrame.Lunch] },
+    { value: TimeFrame.Dinner, label: TIME_FRAME_LABELS[TimeFrame.Dinner] },
+];
 
 export function FloorViewPage() {
     const { restaurants } = useRestaurants();
 
-    // Flatten rooms and keep the restaurant they belong to.
     const rooms = useMemo(
         () => restaurants.flatMap((r) =>
             r.rooms.map((room) => ({ ...room, restaurantName: r.name, restaurantId: r.id }))),
@@ -38,8 +44,9 @@ export function FloorViewPage() {
 
     const [selectedRoomId, setSelectedRoomId] = useState("");
     const [day, setDay] = useState(todayIso());
-    const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
-    const [panelError, setPanelError] = useState<string | null>(null);
+    const [service, setService] = useState<ServiceFilter>("all");
+    const [popupTableId, setPopupTableId] = useState<string | null>(null);
+    const [highlightTableId, setHighlightTableId] = useState<string | null>(null);
 
     useEffect(() => {
         if (rooms.length && !selectedRoomId) setSelectedRoomId(rooms[0].id);
@@ -53,51 +60,34 @@ export function FloorViewPage() {
         () => ({ restaurantId, ...dayRange(day) }),
         [restaurantId, day]
     );
-    const { reservations, loading, assignTable } = useReservations(filters);
+    const { reservations, loading, assignTable, updateStatus } = useReservations(filters);
 
+    // The right-hand list and the table colors both follow the selected service.
+    const slotReservations = useMemo(
+        () =>
+            reservations
+                .filter((r) => service === "all" || r.timeFrame === service)
+                .sort((a, b) => a.reservationDateTime.localeCompare(b.reservationDateTime)),
+        [reservations, service]
+    );
+
+    // Only Confirmed/Seated hold a table — finished or cancelled parties free it up.
     const occupiedTableIds = useMemo(
-        () => new Set(reservations.filter((r) => r.tableId).map((r) => r.tableId as string)),
-        [reservations]
+        () => new Set(
+            slotReservations
+                .filter((r) => r.tableId && ACTIVE_STATUSES.includes(r.status))
+                .map((r) => r.tableId as string)
+        ),
+        [slotReservations]
     );
 
-    const selectedTable = tables.find((t) => t.id === selectedTableId) ?? null;
+    const slotGuests = slotReservations.reduce((sum, r) => sum + r.partySize, 0);
+    const popupTable = tables.find((t) => t.id === popupTableId) ?? null;
 
-    const tableReservations = useMemo(
-        () => reservations
-            .filter((r) => r.tableId === selectedTableId)
-            .sort((a, b) => a.reservationDateTime.localeCompare(b.reservationDateTime)),
-        [reservations, selectedTableId]
-    );
-
-    const unassigned = useMemo(
-        () => reservations.filter((r) => r.tableId === null),
-        [reservations]
-    );
-
-    // Reset selection when switching rooms so the panel never shows a table from another room.
     function handleRoomChange(id: string) {
         setSelectedRoomId(id);
-        setSelectedTableId(null);
-        setPanelError(null);
-    }
-
-    async function seatHere(reservation: Reservation) {
-        if (!selectedTable) return;
-        setPanelError(null);
-        try {
-            await assignTable(reservation.id, selectedTable.id);
-        } catch (err) {
-            setPanelError(apiErrorMessage(err, "Could not seat that reservation here."));
-        }
-    }
-
-    async function unassign(reservation: Reservation) {
-        setPanelError(null);
-        try {
-            await assignTable(reservation.id, null);
-        } catch (err) {
-            setPanelError(apiErrorMessage(err, "Could not unassign that reservation."));
-        }
+        setPopupTableId(null);
+        setHighlightTableId(null);
     }
 
     return (
@@ -105,7 +95,7 @@ export function FloorViewPage() {
             <header className={style.header}>
                 <div>
                     <h1 className={style.title}>Floor view</h1>
-                    <p className={style.subtitle}>See who's seated where, and fill open tables.</p>
+                    <p className={style.subtitle}>Who's booked, when, and at which table.</p>
                 </div>
                 <div className={style.controls}>
                     <select
@@ -129,10 +119,24 @@ export function FloorViewPage() {
                 </div>
             </header>
 
-            <div className={style.legend}>
-                <span className={style.legendItem}><span className={`${style.swatch} ${style.free}`} /> Free</span>
-                <span className={style.legendItem}><span className={`${style.swatch} ${style.occupied}`} /> Has reservations</span>
-                <span className={style.legendHint}>Click a table for details</span>
+            {/* Service slot selector — drives both the list and the table colors */}
+            <div className={style.serviceTabs} role="tablist" aria-label="Service">
+                {SERVICE_TABS.map((tab) => (
+                    <button
+                        key={String(tab.value)}
+                        role="tab"
+                        aria-selected={service === tab.value}
+                        className={service === tab.value ? style.serviceTabActive : style.serviceTab}
+                        onClick={() => setService(tab.value)}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+                <span className={style.legend}>
+                    <span className={`${style.swatch} ${style.freeSwatch}`} /> Free
+                    <span className={`${style.swatch} ${style.occupiedSwatch}`} /> Reserved
+                    <span className={style.legendHint}>Click a table for details</span>
+                </span>
             </div>
 
             <div className={style.body}>
@@ -145,93 +149,77 @@ export function FloorViewPage() {
                     ) : (
                         <FloorViewCanvas
                             tables={tables}
-                            selectedTableId={selectedTableId}
+                            selectedTableId={highlightTableId}
                             occupiedTableIds={occupiedTableIds}
-                            onSelectTable={(id) => { setSelectedTableId(id); setPanelError(null); }}
+                            onSelectTable={(id) => setPopupTableId(id)}
                         />
                     )}
                 </div>
 
-                <aside className={style.panel}>
-                    {!selectedTable ? (
-                        <div className={style.panelEmpty}>
-                            <p className={style.panelEmptyTitle}>No table selected</p>
-                            <p className={style.panelEmptyBody}>Click a table on the floor to see its reservations for {day}.</p>
-                        </div>
+                <aside className={style.listPanel}>
+                    <div className={style.listHead}>
+                        <h2 className={style.listTitle}>
+                            {service === "all" ? "All reservations" : TIME_FRAME_LABELS[service]}
+                        </h2>
+                        <span className={style.listMeta}>
+                            {loading ? "…" : `${slotReservations.length} · ${slotGuests} guests`}
+                        </span>
+                    </div>
+
+                    {loading ? (
+                        <p className={style.muted}>Loading…</p>
+                    ) : slotReservations.length === 0 ? (
+                        <p className={style.muted}>
+                            No {service === "all" ? "" : TIME_FRAME_LABELS[service].toLowerCase() + " "}
+                            reservations on {day}.
+                        </p>
                     ) : (
-                        <>
-                            <div className={style.panelHead}>
-                                <h2 className={style.panelTitle}>Table #{selectedTable.tableNumber}</h2>
-                                <span className={style.capacity}>{selectedTable.minSeats}–{selectedTable.maxSeats} seats</span>
-                            </div>
-
-                            <div className={style.services}>
-                                {SERVICES.map((tf) => {
-                                    const taken = tableReservations.some((r) => r.timeFrame === tf);
-                                    return (
-                                        <div key={tf} className={style.serviceRow}>
-                                            <span className={style.serviceName}>{TIME_FRAME_LABELS[tf]}</span>
-                                            <span className={taken ? style.takenBadge : style.freeBadge}>
-                                                {taken ? "Taken" : "Free"}
+                        <ul className={style.resList}>
+                            {slotReservations.map((r) => {
+                                const highlighted = r.tableId !== null && r.tableId === highlightTableId;
+                                return (
+                                    <li key={r.id}>
+                                        <button
+                                            type="button"
+                                            className={`${style.resRow} ${highlighted ? style.resRowActive : ""}`}
+                                            onClick={() =>
+                                                setHighlightTableId(r.tableId && r.tableId !== highlightTableId ? r.tableId : null)
+                                            }
+                                            title={r.tableId ? "Highlight this table on the floor" : "This reservation has no table yet"}
+                                        >
+                                            <span className={style.resTime}>{timeOf(r.reservationDateTime)}</span>
+                                            <span className={style.resMain}>
+                                                <span className={style.resName}>{r.name}</span>
+                                                <span className={style.resMeta}>
+                                                    {r.partySize} guest{r.partySize === 1 ? "" : "s"}
+                                                    {service === "all" && <> · {TIME_FRAME_LABELS[r.timeFrame]}</>}
+                                                    {r.status !== ReservationStatus.Confirmed && (
+                                                        <> · {STATUS_LABELS[r.status]}</>
+                                                    )}
+                                                </span>
                                             </span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {panelError && <div className={style.error} role="alert">{panelError}</div>}
-
-                            <div className={style.section}>
-                                <div className={style.sectionTitle}>Reservations · {day}</div>
-                                {loading ? (
-                                    <p className={style.muted}>Loading…</p>
-                                ) : tableReservations.length === 0 ? (
-                                    <p className={style.muted}>No reservations for this table on this day.</p>
-                                ) : (
-                                    <ul className={style.resList}>
-                                        {tableReservations.map((r) => (
-                                            <li key={r.id} className={style.resItem}>
-                                                <div className={style.resMain}>
-                                                    <span className={style.resName}>{r.name}</span>
-                                                    <span className={style.resMeta}>
-                                                        {timeOf(r.reservationDateTime)} · {r.partySize}p · {TIME_FRAME_LABELS[r.timeFrame]}
-                                                    </span>
-                                                </div>
-                                                <button className={style.linkBtn} onClick={() => unassign(r)}>Unassign</button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-
-                            <div className={style.section}>
-                                <div className={style.sectionTitle}>Seat an unassigned reservation</div>
-                                {unassigned.length === 0 ? (
-                                    <p className={style.muted}>No unassigned reservations on this day.</p>
-                                ) : (
-                                    <ul className={style.resList}>
-                                        {unassigned.map((r) => {
-                                            const fits = r.partySize <= selectedTable.maxSeats;
-                                            return (
-                                                <li key={r.id} className={style.resItem}>
-                                                    <div className={style.resMain}>
-                                                        <span className={style.resName}>{r.name}</span>
-                                                        <span className={style.resMeta}>
-                                                            {timeOf(r.reservationDateTime)} · {r.partySize}p · {TIME_FRAME_LABELS[r.timeFrame]}
-                                                            {!fits && <span className={style.tight}> · over capacity</span>}
-                                                        </span>
-                                                    </div>
-                                                    <button className={style.seatBtn} onClick={() => seatHere(r)}>Seat here</button>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                )}
-                            </div>
-                        </>
+                                            {r.tableNumber != null
+                                                ? <span className={style.tableBadge}>#{r.tableNumber}</span>
+                                                : <span className={style.unassigned}>Unassigned</span>}
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
                     )}
                 </aside>
             </div>
+
+            {popupTable && (
+                <TableDetailsModal
+                    table={popupTable}
+                    day={day}
+                    dayReservations={reservations}
+                    onAssign={assignTable}
+                    onUpdateStatus={updateStatus}
+                    onClose={() => setPopupTableId(null)}
+                />
+            )}
         </div>
     );
 }

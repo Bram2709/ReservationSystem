@@ -12,6 +12,17 @@ namespace Service.Mapping
             Id = r.Id,
             Name = r.Name,
             Address = r.Address,
+            Settings = new RestaurantSettingsDto
+            {
+                BreakfastStart = r.BreakfastStart,
+                BreakfastEnd = r.BreakfastEnd,
+                LunchStart = r.LunchStart,
+                LunchEnd = r.LunchEnd,
+                DinnerStart = r.DinnerStart,
+                DinnerEnd = r.DinnerEnd,
+                DefaultDurationMinutes = r.DefaultDurationMinutes,
+                MaxCoversPerService = r.MaxCoversPerService
+            },
             Rooms = r.Rooms.Select(ToDto).OrderBy(room => room.Name).ToList()
         };
 

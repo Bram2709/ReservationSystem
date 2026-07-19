@@ -1,0 +1,252 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 760px;
+    padding: 24px;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--deep-charcoal);
+}
+
+.subtitle {
+    margin-top: 4px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--slate-grey);
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 8px;
+    background-color: var(--white);
+    box-shadow: 0 12px 32px rgba(9, 11, 12, 0.04);
+}
+
+.cardTitle {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--deep-charcoal);
+}
+
+.sectionTitle {
+    color: var(--slate-grey);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.hintInline {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+}
+
+.windows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.windowRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.windowLabel {
+    width: 90px;
+    color: var(--deep-charcoal);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.windowRow input,
+.field input,
+.inviteRow input {
+    padding: 8px 10px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 6px;
+    background-color: var(--neutral-background-grey);
+    color: var(--deep-charcoal);
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.windowRow input:focus,
+.field input:focus,
+.inviteRow input:focus {
+    outline: 2px solid var(--primary-purple);
+    outline-offset: -1px;
+    background-color: var(--white);
+}
+
+.windowDash {
+    color: var(--slate-grey);
+}
+
+.row {
+    display: flex;
+    gap: 16px;
+}
+
+.row > * {
+    flex: 1;
+    min-width: 0;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.field label {
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.hint {
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.notice {
+    padding: 10px 14px;
+    border: 1px solid var(--success-green);
+    border-radius: 6px;
+    background-color: color-mix(in srgb, var(--success-green) 10%, var(--white));
+    color: var(--success-green);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.tempPw {
+    padding: 2px 8px;
+    border-radius: 4px;
+    background-color: var(--deep-charcoal);
+    color: var(--white);
+    font-size: 0.8125rem;
+    letter-spacing: 0.05em;
+}
+
+.error {
+    padding: 10px 14px;
+    border: 1px solid var(--error-red);
+    border-radius: 6px;
+    background-color: color-mix(in srgb, var(--error-red) 8%, var(--white));
+    color: var(--error-red);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.saveBtn {
+    align-self: flex-start;
+    padding: 9px 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--primary-purple);
+    color: var(--white);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 16px var(--shadow-purple);
+    transition: background-color 0.15s ease;
+}
+
+.saveBtn:hover:not(:disabled) {
+    background-color: var(--occupied-table-accent);
+}
+
+.saveBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.inviteRow {
+    display: flex;
+    gap: 10px;
+}
+
+.inviteRow input {
+    flex: 1;
+}
+
+.teamList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.teamRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 6px;
+    background-color: var(--neutral-background-grey);
+}
+
+.teamMain {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.teamEmail {
+    color: var(--deep-charcoal);
+    font-size: 0.875rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.teamMeta {
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+}
+
+.removeBtn {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 6px;
+    background-color: var(--white);
+    color: var(--error-red);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.removeBtn:hover {
+    border-color: var(--error-red);
+}
+
+@media screen and (width < 700px) {
+    .wrapper {
+        padding: 16px;
+    }
+
+    .row,
+    .inviteRow {
+        flex-direction: column;
+    }
+}

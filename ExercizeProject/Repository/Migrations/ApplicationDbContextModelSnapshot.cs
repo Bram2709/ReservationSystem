@@ -87,6 +87,9 @@ namespace Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -105,11 +108,17 @@ namespace Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("ReminderSentAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("ReservationDateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("TableId")
                         .HasColumnType("uniqueidentifier");
@@ -137,6 +146,30 @@ namespace Repository.Migrations
 
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("BreakfastEnd")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BreakfastStart")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DefaultDurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DinnerEnd")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DinnerStart")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LunchEnd")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LunchStart")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxCoversPerService")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -287,6 +320,18 @@ namespace Repository.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PasswordResetExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordResetTokenHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RefreshTokenHash")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Role")

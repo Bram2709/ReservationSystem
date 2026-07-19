@@ -284,6 +284,47 @@
     font-weight: 600;
 }
 
+/* Status badges — class suffix is the numeric ReservationStatus value */
+.statusBadge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status0 { /* Confirmed */
+    background-color: var(--muted-purple-tone);
+    color: var(--primary-purple);
+}
+
+.status1 { /* Seated */
+    background-color: color-mix(in srgb, var(--success-green) 16%, var(--white));
+    color: var(--success-green);
+}
+
+.status2 { /* Finished */
+    background-color: var(--deep-cool-background-grey);
+    color: var(--slate-grey);
+}
+
+.status3 { /* No-show */
+    background-color: color-mix(in srgb, var(--error-red) 12%, var(--white));
+    color: var(--error-red);
+}
+
+.status4 { /* Cancelled */
+    background-color: var(--deep-cool-background-grey);
+    color: var(--slate-grey);
+    text-decoration: line-through;
+}
+
+.status5 { /* Waitlist */
+    background-color: color-mix(in srgb, var(--warning-orange) 16%, var(--white));
+    color: color-mix(in srgb, var(--warning-orange) 80%, var(--black));
+}
+
 .tableCell {
     display: flex;
     gap: 8px;

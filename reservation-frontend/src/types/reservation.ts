@@ -13,6 +13,33 @@ export const TIME_FRAME_LABELS: Record<TimeFrame, string> = {
     [TimeFrame.Dinner]: "Dinner",
 };
 
+// Mirrors Models.Enums.ReservationStatus
+export const ReservationStatus = {
+    Confirmed: 0,
+    Seated: 1,
+    Finished: 2,
+    NoShow: 3,
+    Cancelled: 4,
+    Waitlisted: 5,
+} as const;
+
+export type ReservationStatus = (typeof ReservationStatus)[keyof typeof ReservationStatus];
+
+export const STATUS_LABELS: Record<ReservationStatus, string> = {
+    [ReservationStatus.Confirmed]: "Confirmed",
+    [ReservationStatus.Seated]: "Seated",
+    [ReservationStatus.Finished]: "Finished",
+    [ReservationStatus.NoShow]: "No-show",
+    [ReservationStatus.Cancelled]: "Cancelled",
+    [ReservationStatus.Waitlisted]: "Waitlist",
+};
+
+/** Statuses that hold a table and count against covers. */
+export const ACTIVE_STATUSES: ReservationStatus[] = [
+    ReservationStatus.Confirmed,
+    ReservationStatus.Seated,
+];
+
 // Mirrors Models.DTOs.Reservation.ReservationDto
 export interface Reservation {
     id: string;
@@ -23,6 +50,8 @@ export interface Reservation {
     partySize: number;
     timeFrame: TimeFrame;
     reservationDateTime: string;
+    status: ReservationStatus;
+    durationMinutes: number;
     restaurantId: string;
     restaurantName: string | null;
     tableId: string | null;
@@ -42,6 +71,9 @@ export interface CreateReservationPayload {
     reservationDateTime: string;
     restaurantId: string;
     tableId?: string | null;
+    durationMinutes?: number | null;
+    /** True queues the reservation instead of booking it (no table, no covers count). */
+    waitlisted?: boolean;
 }
 
 // Mirrors Models.DTOs.Reservation.UpdateReservationDto
@@ -54,6 +86,18 @@ export interface ReservationFilters {
     from?: string;
     to?: string;
     timeFrame?: TimeFrame;
+}
+
+// Mirrors Models.DTOs.Customer.CustomerDto
+export interface Customer {
+    name: string;
+    email: string;
+    phoneNumber: string;
+    totalReservations: number;
+    noShows: number;
+    totalGuests: number;
+    firstVisit: string;
+    lastVisit: string;
 }
 
 // Mirrors Models.DTOs.Reservation.TableAvailabilityDto

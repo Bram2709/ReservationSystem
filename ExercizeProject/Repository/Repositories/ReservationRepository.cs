@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Models.DTOs.Customer;
 using Models.Enums;
 using Models.Models;
 using Repository.Interfaces;
@@ -7,6 +8,9 @@ namespace Repository.Repositories
 {
     internal class ReservationRepository(ApplicationDbContext context) : IReservationRepository
     {
+        private static readonly ReservationStatus[] ActiveStatuses =
+            [ReservationStatus.Confirmed, ReservationStatus.Seated];
+
         private IQueryable<Reservation> ScopedTo(Guid organizationId) =>
             context.Reservations
                 .Where(r => !r.IsDeleted && r.Restaurant!.OrganizationId == organizationId);
@@ -96,10 +100,16 @@ namespace Repository.Repositories
 
         public async Task<bool> TableBelongsToRestaurantAsync(Guid tableId, Guid restaurantId)
         {
-            // Table -> FloorPlan -> Room -> Restaurant
             return await context.Tables
                 .AnyAsync(t => t.Id == tableId
                     && t.FloorPlan!.Room!.RestaurantId == restaurantId);
+        }
+
+        public async Task<Restaurant?> GetRestaurantForOrganizationAsync(Guid restaurantId, Guid organizationId)
+        {
+            return await context.Restaurants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == restaurantId && r.OrganizationId == organizationId);
         }
 
         public async Task<IReadOnlyList<Table>> GetSeatableTablesForRestaurantAsync(Guid restaurantId)
@@ -113,28 +123,89 @@ namespace Repository.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IReadOnlyList<Reservation>> GetTableHoldersInSlotAsync(
+        public async Task<IReadOnlyList<Reservation>> GetActiveTableHoldersNearAsync(
+            Guid restaurantId,
+            DateTime aroundUtc,
+            Guid? excludeReservationId)
+        {
+            // SQL narrows to a ±12h window (durations are capped well below that); the
+            // service does the exact time-overlap math in memory.
+            var from = aroundUtc.AddHours(-12);
+            var to = aroundUtc.AddHours(12);
+
+            var query = context.Reservations
+                .Where(r => !r.IsDeleted
+                    && r.RestaurantId == restaurantId
+                    && r.TableId != null
+                    && ActiveStatuses.Contains(r.Status)
+                    && r.ReservationDateTime >= from
+                    && r.ReservationDateTime < to);
+
+            if (excludeReservationId.HasValue)
+                query = query.Where(r => r.Id != excludeReservationId.Value);
+
+            return await query.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<int> GetActiveCoversAsync(
             Guid restaurantId,
             DateTime dayStartUtc,
             DateTime dayEndUtc,
             TimeFrame timeFrame,
             Guid? excludeReservationId)
         {
-            // A day+service range rather than an exact instant: two dinner bookings on the same
-            // day compete for the same table. Range comparison avoids translating .Date through
-            // the UTC value converter on ReservationDateTime.
             var query = context.Reservations
                 .Where(r => !r.IsDeleted
                     && r.RestaurantId == restaurantId
-                    && r.TableId != null
                     && r.TimeFrame == timeFrame
+                    && ActiveStatuses.Contains(r.Status)
                     && r.ReservationDateTime >= dayStartUtc
                     && r.ReservationDateTime < dayEndUtc);
 
             if (excludeReservationId.HasValue)
                 query = query.Where(r => r.Id != excludeReservationId.Value);
 
-            return await query.AsNoTracking().ToListAsync();
+            return await query.SumAsync(r => (int?)r.PartySize) ?? 0;
+        }
+
+        public async Task<IReadOnlyList<CustomerDto>> GetCustomersAsync(Guid organizationId)
+        {
+            // Small projection to memory, grouped there — group-by-with-latest-name doesn't
+            // translate cleanly to SQL and guest lists are organization-sized.
+            var rows = await ScopedTo(organizationId)
+                .Where(r => r.Email != "")
+                .Select(r => new
+                {
+                    r.Name,
+                    r.Email,
+                    r.PhoneNumber,
+                    r.PartySize,
+                    r.Status,
+                    r.ReservationDateTime,
+                    r.CreatedAt
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return rows
+                .GroupBy(r => r.Email.ToLowerInvariant())
+                .Select(g =>
+                {
+                    var latest = g.OrderByDescending(r => r.CreatedAt).First();
+                    return new CustomerDto
+                    {
+                        Name = latest.Name,
+                        Email = latest.Email,
+                        PhoneNumber = latest.PhoneNumber,
+                        TotalReservations = g.Count(),
+                        NoShows = g.Count(r => r.Status == ReservationStatus.NoShow),
+                        TotalGuests = g.Sum(r => r.PartySize),
+                        FirstVisit = g.Min(r => r.ReservationDateTime),
+                        LastVisit = g.Max(r => r.ReservationDateTime)
+                    };
+                })
+                .OrderByDescending(c => c.LastVisit)
+                .ToList();
         }
     }
 }

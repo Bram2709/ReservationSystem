@@ -13,6 +13,14 @@ namespace Models.Models
         public TimeFrame TimeFrame { get; set; }
         public DateTime ReservationDateTime { get; set; }
 
+        public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
+
+        // How long the table is held from ReservationDateTime; drives overlap conflicts.
+        public int DurationMinutes { get; set; } = 120;
+
+        // Stamped when the ~24h reminder email has gone out, so it is sent only once.
+        public DateTime? ReminderSentAt { get; set; }
+
         public Guid? TableId { get; set; }
         public Table? Table { get; set; }
         public Guid RestaurantId { get; set; }

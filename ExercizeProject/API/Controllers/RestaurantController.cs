@@ -91,6 +91,25 @@ namespace API.Controllers
             }
         }
 
+        [HttpPut("{id:guid}/settings")]
+        public async Task<ActionResult<RestaurantDto>> UpdateSettings(Guid id, [FromBody] RestaurantSettingsDto dto)
+        {
+            if (!TryGetOrganizationId(out var organizationId))
+                return Unauthorized();
+
+            try
+            {
+                var updated = await restaurantService.UpdateSettingsAsync(id, dto, organizationId);
+                return updated is null ? NotFound() : Ok(updated);
+            }
+            catch (Exception e)
+            {
+                const string errorMsg = "An error occurred while updating the restaurant settings";
+                logger.LogError(e, errorMsg);
+                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
+            }
+        }
+
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteRestaurant(Guid id)
         {

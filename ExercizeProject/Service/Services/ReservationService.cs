@@ -1,4 +1,5 @@
-﻿using Models.DTOs.Reservation;
+﻿using Models.DTOs.Customer;
+using Models.DTOs.Reservation;
 using Models.Enums;
 using Repository.Interfaces;
 using Service.Interface;
@@ -6,8 +7,10 @@ using Entities = Models.Models;
 
 namespace Service.Services
 {
-    public class ReservationService(IReservationRepository reservationRepository) : IReservationService
+    public class ReservationService(IReservationRepository reservationRepository, IEmailSender emailSender) : IReservationService
     {
+        private const int FallbackDurationMinutes = 120;
+
         public async Task<IEnumerable<ReservationDto>> GetAllAsync(
             Guid organizationId,
             Guid? restaurantId = null,
@@ -27,28 +30,47 @@ namespace Service.Services
             return reservation is null ? null : ToDto(reservation);
         }
 
-        public async Task<ReservationDto?> CreateAsync(CreateReservationDto reservationDto, Guid organizationId)
+        public async Task<ReservationCreateResult> CreateAsync(CreateReservationDto reservationDto, Guid organizationId)
         {
-            if (!await reservationRepository.RestaurantBelongsToOrganizationAsync(reservationDto.RestaurantId, organizationId))
-                return null;
+            var restaurant = await reservationRepository.GetRestaurantForOrganizationAsync(
+                reservationDto.RestaurantId, organizationId);
+            if (restaurant is null)
+                return new(CreateReservationOutcome.NotOwned, null);
+
+            if (reservationDto.TableId.HasValue &&
+                !await reservationRepository.TableBelongsToOrganizationAsync(reservationDto.TableId.Value, organizationId))
+                return new(CreateReservationOutcome.NotOwned, null);
+
+            var duration = reservationDto.DurationMinutes
+                ?? (restaurant.DefaultDurationMinutes > 0 ? restaurant.DefaultDurationMinutes : FallbackDurationMinutes);
 
             Guid? tableId = reservationDto.TableId;
 
-            if (tableId.HasValue)
+            // Waitlisted entries are queued only: no window/covers checks, no table.
+            if (!reservationDto.Waitlisted)
             {
-                if (!await reservationRepository.TableBelongsToOrganizationAsync(tableId.Value, organizationId))
-                    return null;
+                if (!WithinServiceWindow(restaurant, reservationDto.TimeFrame, reservationDto.ReservationDateTime))
+                    return new(CreateReservationOutcome.OutsideServiceWindow, null);
+
+                if (restaurant.MaxCoversPerService is int cap)
+                {
+                    var (dayStart, dayEnd) = DayBoundsUtc(reservationDto.ReservationDateTime);
+                    var booked = await reservationRepository.GetActiveCoversAsync(
+                        restaurant.Id, dayStart, dayEnd, reservationDto.TimeFrame, null);
+                    if (booked + reservationDto.PartySize > cap)
+                        return new(CreateReservationOutcome.OverCapacity, null);
+                }
+
+                if (!tableId.HasValue)
+                {
+                    tableId = await TryFindAvailableTableAsync(
+                        restaurant.Id, reservationDto.PartySize,
+                        reservationDto.ReservationDateTime, duration, excludeReservationId: null);
+                }
             }
             else
             {
-                // No table chosen: try to seat the party automatically. Leaves TableId null when
-                // nothing fits or everything is taken, so the caller can warn the user.
-                tableId = await TryFindAvailableTableAsync(
-                    reservationDto.RestaurantId,
-                    reservationDto.PartySize,
-                    reservationDto.ReservationDateTime,
-                    reservationDto.TimeFrame,
-                    excludeReservationId: null);
+                tableId = null;
             }
 
             Entities.Reservation reservation = new()
@@ -62,12 +84,27 @@ namespace Service.Services
                 ReservationDateTime = reservationDto.ReservationDateTime,
                 RestaurantId = reservationDto.RestaurantId,
                 TableId = tableId,
+                DurationMinutes = duration,
+                Status = reservationDto.Waitlisted ? ReservationStatus.Waitlisted : ReservationStatus.Confirmed,
                 CreatedAt = DateTime.UtcNow,
                 IsDeleted = false
             };
 
             var created = await reservationRepository.CreateAsync(reservation);
-            return ToDto(created);
+
+            if (!string.IsNullOrWhiteSpace(created.Email) && created.Status == ReservationStatus.Confirmed)
+            {
+                var when = created.ReservationDateTime.ToLocalTime();
+                _ = emailSender.SendAsync(
+                    created.Email,
+                    $"Reservation confirmed at {created.Restaurant?.Name ?? "the restaurant"}",
+                    $"Hi {created.Name},\n\nYour reservation is confirmed:\n" +
+                    $"  Restaurant: {created.Restaurant?.Name}\n" +
+                    $"  When: {when:dddd d MMMM, HH:mm}\n" +
+                    $"  Party size: {created.PartySize}\n\nSee you then!");
+            }
+
+            return new(CreateReservationOutcome.Created, ToDto(created));
         }
 
         public async Task<ReservationDto?> UpdateAsync(UpdateReservationDto reservationDto, Guid organizationId)
@@ -90,6 +127,8 @@ namespace Service.Services
             reservation.TimeFrame = reservationDto.TimeFrame;
             reservation.ReservationDateTime = reservationDto.ReservationDateTime;
             reservation.TableId = reservationDto.TableId;
+            if (reservationDto.DurationMinutes.HasValue)
+                reservation.DurationMinutes = reservationDto.DurationMinutes.Value;
             reservation.UpdatedAt = DateTime.UtcNow;
 
             await reservationRepository.UpdateAsync(reservation);
@@ -104,6 +143,18 @@ namespace Service.Services
             return await reservationRepository.DeleteAsync(id, organizationId);
         }
 
+        public async Task<ReservationDto?> UpdateStatusAsync(Guid id, ReservationStatus status, Guid organizationId)
+        {
+            var reservation = await reservationRepository.GetByIdAsync(id, organizationId);
+            if (reservation is null)
+                return null;
+
+            reservation.Status = status;
+            reservation.UpdatedAt = DateTime.UtcNow;
+            await reservationRepository.UpdateAsync(reservation);
+            return ToDto(reservation);
+        }
+
         public async Task<IReadOnlyList<TableAvailabilityDto>?> GetAvailableTablesAsync(
             Guid reservationId, Guid organizationId)
         {
@@ -112,7 +163,7 @@ namespace Service.Services
                 return null;
 
             var tables = await reservationRepository.GetSeatableTablesForRestaurantAsync(reservation.RestaurantId);
-            var occupants = await GetSlotOccupantsAsync(reservation, excludeReservationId: reservation.Id);
+            var occupants = await GetOverlappingOccupantsAsync(reservation);
 
             return tables.Select(t =>
             {
@@ -145,7 +196,7 @@ namespace Service.Services
                     return (AssignTableOutcome.TableNotInRestaurant, null);
 
                 // Guard against double-booking, ignoring the reservation's own current hold.
-                var occupants = await GetSlotOccupantsAsync(reservation, excludeReservationId: reservation.Id);
+                var occupants = await GetOverlappingOccupantsAsync(reservation);
                 if (occupants.ContainsKey(tableId.Value))
                     return (AssignTableOutcome.TableOccupied, null);
             }
@@ -159,31 +210,45 @@ namespace Service.Services
             return (AssignTableOutcome.Assigned, updated is null ? null : ToDto(updated));
         }
 
-        // Table id -> name of the reservation currently holding it in this reservation's slot.
-        private async Task<Dictionary<Guid, string>> GetSlotOccupantsAsync(
-            Entities.Reservation reservation, Guid? excludeReservationId)
+        public Task<IReadOnlyList<CustomerDto>> GetCustomersAsync(Guid organizationId) =>
+            reservationRepository.GetCustomersAsync(organizationId);
+
+        // --- Availability helpers (time-overlap model) ---
+
+        private static int EffectiveDuration(int minutes) =>
+            minutes > 0 ? minutes : FallbackDurationMinutes;
+
+        private static bool Overlaps(DateTime aStart, int aMinutes, DateTime bStart, int bMinutes) =>
+            aStart < bStart.AddMinutes(EffectiveDuration(bMinutes)) &&
+            bStart < aStart.AddMinutes(EffectiveDuration(aMinutes));
+
+        /// <summary>Table id -> holder name, for tables whose active reservations overlap this one in time.</summary>
+        private async Task<Dictionary<Guid, string>> GetOverlappingOccupantsAsync(Entities.Reservation reservation)
         {
-            var (dayStart, dayEnd) = DayBoundsUtc(reservation.ReservationDateTime);
-            var holders = await reservationRepository.GetTableHoldersInSlotAsync(
-                reservation.RestaurantId, dayStart, dayEnd, reservation.TimeFrame, excludeReservationId);
+            var holders = await reservationRepository.GetActiveTableHoldersNearAsync(
+                reservation.RestaurantId, reservation.ReservationDateTime, reservation.Id);
 
             return holders
-                .Where(r => r.TableId.HasValue)
+                .Where(r => r.TableId.HasValue && Overlaps(
+                    reservation.ReservationDateTime, reservation.DurationMinutes,
+                    r.ReservationDateTime, r.DurationMinutes))
                 .GroupBy(r => r.TableId!.Value)
                 .ToDictionary(g => g.Key, g => g.First().Name);
         }
 
         private async Task<Guid?> TryFindAvailableTableAsync(
-            Guid restaurantId, int partySize, DateTime dateTimeUtc, TimeFrame timeFrame, Guid? excludeReservationId)
+            Guid restaurantId, int partySize, DateTime startUtc, int durationMinutes, Guid? excludeReservationId)
         {
             var tables = await reservationRepository.GetSeatableTablesForRestaurantAsync(restaurantId);
             if (tables.Count == 0)
                 return null;
 
-            var (dayStart, dayEnd) = DayBoundsUtc(dateTimeUtc);
-            var occupied = (await reservationRepository.GetTableHoldersInSlotAsync(
-                    restaurantId, dayStart, dayEnd, timeFrame, excludeReservationId))
-                .Where(r => r.TableId.HasValue)
+            var holders = await reservationRepository.GetActiveTableHoldersNearAsync(
+                restaurantId, startUtc, excludeReservationId);
+
+            var occupied = holders
+                .Where(r => r.TableId.HasValue &&
+                    Overlaps(startUtc, durationMinutes, r.ReservationDateTime, r.DurationMinutes))
                 .Select(r => r.TableId!.Value)
                 .ToHashSet();
 
@@ -195,6 +260,32 @@ namespace Service.Services
                 .ThenBy(t => t.TableNumber)
                 .Select(t => (Guid?)t.Id)
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// True when the reservation's local time falls inside the restaurant's configured
+        /// window for that service; unconfigured windows don't restrict. Times are compared
+        /// in server-local time, assuming the restaurant runs in the server's timezone.
+        /// </summary>
+        private static bool WithinServiceWindow(Entities.Restaurant restaurant, TimeFrame timeFrame, DateTime whenUtc)
+        {
+            var (start, end) = timeFrame switch
+            {
+                TimeFrame.Breakfast => (restaurant.BreakfastStart, restaurant.BreakfastEnd),
+                TimeFrame.Lunch => (restaurant.LunchStart, restaurant.LunchEnd),
+                TimeFrame.Dinner => (restaurant.DinnerStart, restaurant.DinnerEnd),
+                _ => (null, null)
+            };
+
+            if (start is null || end is null)
+                return true;
+
+            var local = whenUtc.Kind == DateTimeKind.Unspecified
+                ? whenUtc
+                : whenUtc.ToLocalTime();
+            var minutes = local.Hour * 60 + local.Minute;
+
+            return minutes >= start.Value && minutes < end.Value;
         }
 
         // UTC midnight boundaries of the reservation's calendar day.
@@ -217,6 +308,8 @@ namespace Service.Services
             PartySize = r.PartySize,
             TimeFrame = r.TimeFrame,
             ReservationDateTime = r.ReservationDateTime,
+            Status = r.Status,
+            DurationMinutes = EffectiveDuration(r.DurationMinutes),
             RestaurantId = r.RestaurantId,
             RestaurantName = r.Restaurant?.Name,
             TableId = r.TableId,

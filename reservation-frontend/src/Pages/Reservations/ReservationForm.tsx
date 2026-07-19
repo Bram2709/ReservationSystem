@@ -55,6 +55,7 @@ export function ReservationForm({
         reservation?.restaurantId ?? restaurants[0]?.id ?? ""
     );
 
+    const [waitlisted, setWaitlisted] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -96,6 +97,7 @@ export function ReservationForm({
                     timeFrame,
                     reservationDateTime,
                     restaurantId,
+                    waitlisted,
                 });
             }
             onClose();
@@ -213,6 +215,23 @@ export function ReservationForm({
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
+
+                    {!isEdit && (
+                        <label className={style.checkboxField} htmlFor="res-waitlist">
+                            <input
+                                id="res-waitlist"
+                                type="checkbox"
+                                checked={waitlisted}
+                                onChange={(e) => setWaitlisted(e.target.checked)}
+                            />
+                            <span>
+                                <span className={style.checkboxLabel}>Add to waitlist</span>
+                                <span className={style.hint} style={{ display: "block" }}>
+                                    Queued without a table — promote it later when space frees up.
+                                </span>
+                            </span>
+                        </label>
+                    )}
 
                     <footer className={style.footer}>
                         <button type="button" className={style.secondaryBtn} onClick={onClose}>

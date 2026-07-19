@@ -2,6 +2,7 @@ import axios from 'axios';
 import type {
     CreateRestaurantPayload,
     Restaurant,
+    RestaurantSettings,
     UpdateRestaurantPayload,
 } from '../types/restaurant';
 
@@ -32,6 +33,16 @@ export class RestaurantService {
             return response.data;
         } catch (error) {
             console.error("Failed to update restaurant:", error);
+            throw error;
+        }
+    }
+
+    static async updateSettings(id: string, settings: RestaurantSettings): Promise<Restaurant> {
+        try {
+            const response = await axios.put<Restaurant>(`/restaurant/${id}/settings`, settings);
+            return response.data;
+        } catch (error) {
+            console.error("Failed to update restaurant settings:", error);
             throw error;
         }
     }

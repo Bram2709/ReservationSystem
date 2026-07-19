@@ -11,11 +11,24 @@ export interface Room {
     seats: number;
 }
 
+// Mirrors Models.DTOs.Restaurant.RestaurantSettingsDto (times are minutes from midnight)
+export interface RestaurantSettings {
+    breakfastStart: number | null;
+    breakfastEnd: number | null;
+    lunchStart: number | null;
+    lunchEnd: number | null;
+    dinnerStart: number | null;
+    dinnerEnd: number | null;
+    defaultDurationMinutes: number;
+    maxCoversPerService: number | null;
+}
+
 // Mirrors Models.DTOs.Restaurant.RestaurantDto
 export interface Restaurant {
     id: string;
     name: string;
     address: string | null;
+    settings: RestaurantSettings;
     rooms: Room[];
 }
 

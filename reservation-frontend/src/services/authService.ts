@@ -75,6 +75,14 @@ class AuthService {
         await axios.post("/auth/register", body);
     }
 
+    async forgotPassword(email: string): Promise<void> {
+        await axios.post("/auth/forgot-password", { email });
+    }
+
+    async resetPassword(email: string, token: string, newPassword: string): Promise<void> {
+        await axios.post("/auth/reset-password", { email, token, newPassword });
+    }
+
     async logout(): Promise<void> {
         try {
             await axios.post("/auth/logout");

@@ -49,6 +49,25 @@ namespace Service.Services
             return ToDto(updated);
         }
 
+        public async Task<RestaurantDto?> UpdateSettingsAsync(Guid restaurantId, RestaurantSettingsDto settings, Guid organizationId)
+        {
+            var restaurant = await restaurantRepository.GetByIdAsync(restaurantId, organizationId);
+            if (restaurant is null)
+                return null;
+
+            restaurant.BreakfastStart = settings.BreakfastStart;
+            restaurant.BreakfastEnd = settings.BreakfastEnd;
+            restaurant.LunchStart = settings.LunchStart;
+            restaurant.LunchEnd = settings.LunchEnd;
+            restaurant.DinnerStart = settings.DinnerStart;
+            restaurant.DinnerEnd = settings.DinnerEnd;
+            restaurant.DefaultDurationMinutes = settings.DefaultDurationMinutes;
+            restaurant.MaxCoversPerService = settings.MaxCoversPerService;
+
+            var updated = await restaurantRepository.UpdateAsync(restaurant);
+            return ToDto(updated);
+        }
+
         public async Task<DeleteOutcome> DeleteAsync(Guid id, Guid organizationId)
         {
             var restaurant = await restaurantRepository.GetByIdAsync(id, organizationId);

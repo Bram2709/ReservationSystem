@@ -1,97 +1,419 @@
 .wrapper {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 16px;
+    gap: 20px;
+    padding: 24px;
 }
 
-.row1{
+/* --- Header --- */
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--deep-charcoal);
+}
+
+.subtitle {
+    margin-top: 4px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--slate-grey);
+}
+
+.primaryBtn {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background-color: var(--primary-purple);
+    color: var(--white);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 6px 16px var(--shadow-purple);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.primaryBtn:hover {
+    background-color: var(--occupied-table-accent);
+    transform: translateY(-1px);
+}
+
+/* --- Stat cards --- */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.statCard {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-
-    .card{
-        height: 100px;
-    }
+    gap: 4px;
+    padding: 16px 20px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 8px;
+    background-color: var(--white);
+    box-shadow: 0 12px 32px rgba(9, 11, 12, 0.04);
+    text-decoration: none;
 }
 
+.statLink:hover {
+    border-color: var(--primary-purple);
+}
 
-.reservationsRow {
+.statWarning {
+    border-color: var(--warning-orange);
+    background-color: color-mix(in srgb, var(--warning-orange) 6%, var(--white));
+}
+
+.statLabel {
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.statValue {
+    color: var(--deep-charcoal);
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.statHint {
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+}
+
+.statWarning .statHint {
+    color: color-mix(in srgb, var(--warning-orange) 80%, var(--black));
+    font-weight: 600;
+}
+
+/* --- Main row: chart + arrivals --- */
+
+.mainRow {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.chartCard,
+.arrivalsCard {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-
-    .table{
-        height: 200px;
-        background-color: rgb(255, 248, 240);
-        border: 1px solid #d4b896;
-        border-radius: 8px;
-        padding: 16px;
-        box-sizing: border-box;
-    }
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 8px;
+    background-color: var(--white);
+    box-shadow: 0 12px 32px rgba(9, 11, 12, 0.04);
 }
 
-.row2 {
+.cardHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.cardTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--deep-charcoal);
+}
+
+.cardMeta {
+    color: var(--slate-grey);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.viewAll {
+    color: var(--primary-purple);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.viewAll:hover {
+    text-decoration: underline;
+}
+
+.muted {
+    color: var(--slate-grey);
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+/* --- Bar chart --- */
+
+.chart {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    height: 180px;
+}
+
+.chartCol {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-
-    .graph{
-        height: 300px;
-        background-color: rgb(255, 248, 240);
-        border: 1px solid #d4b896;
-        border-radius: 8px;
-        padding: 16px;
-        box-sizing: border-box;
-    }
-
-    .data{
-        height: 300px;
-        background-color: rgb(255, 248, 240);
-        border: 1px solid #d4b896;
-        border-radius: 8px;
-        padding: 16px;
-        box-sizing: border-box;
-    }
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
 }
 
+.barCount {
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
 
+.barTrack {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+}
 
-@media (min-width: 768px) {
+.bar {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    background-color: var(--muted-purple-tone);
+    transition: height 0.3s ease;
+}
 
-    .row1 {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-    
-        .card{
-            margin: auto;
-            height: 200px;
-            flex: 1;
-        }
-    }   
+.barToday {
+    background-color: var(--primary-purple);
+}
 
-    .reservationsRow {
-        flex-direction: row;
+.barLabel {
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
 
-        .table{
-            height: 400px;
-            flex: 1;
-        }
+.barLabelToday {
+    color: var(--primary-purple);
+    font-weight: 700;
+}
+
+.services {
+    display: flex;
+    gap: 8px;
+}
+
+.serviceChip {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: var(--neutral-background-grey);
+}
+
+.serviceName {
+    color: var(--deep-charcoal);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.serviceCount {
+    color: var(--slate-grey);
+    font-size: 0.6875rem;
+}
+
+/* --- Next arrivals --- */
+
+.arrivalList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.arrival {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--muted-purple-tone);
+    color: var(--primary-purple);
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.arrivalInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.arrivalTop {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.arrivalName {
+    color: var(--deep-charcoal);
+    font-size: 0.875rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.arrivalTime {
+    color: var(--primary-purple);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.arrivalMeta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+}
+
+.dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--slate-grey);
+}
+
+.tableBadge {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--success-green) 14%, var(--white));
+    color: var(--success-green);
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.unassigned {
+    color: var(--warning-orange);
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+/* --- Restaurants snapshot --- */
+
+.restaurantGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.restaurantCard {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 20px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 8px;
+    background-color: var(--white);
+    box-shadow: 0 12px 32px rgba(9, 11, 12, 0.04);
+}
+
+.restaurantName {
+    color: var(--deep-charcoal);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.restaurantMeta {
+    color: var(--slate-grey);
+    font-size: 0.8125rem;
+}
+
+.restaurantToday {
+    color: var(--slate-grey);
+    font-size: 0.8125rem;
+}
+
+.restaurantCount {
+    color: var(--primary-purple);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.restaurantLinks {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.ghostBtn {
+    padding: 6px 12px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 6px;
+    background-color: var(--white);
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.ghostBtn:hover {
+    border-color: var(--primary-purple);
+    color: var(--primary-purple);
+}
+
+.emptyCard {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    padding: 40px;
+    margin-top: 10px;
+    border: 1px dashed var(--muted-purple-tone);
+    border-radius: 8px;
+    background-color: var(--white);
+    text-align: center;
+}
+
+/* --- Responsive --- */
+
+@media screen and (width < 900px) {
+    .wrapper {
+        padding: 16px;
     }
 
-    .row2 {
-        flex-direction: row;
-
-        .graph{
-            height: 300px;
-            flex: 2;
-        }
-
-        .data{
-            height: 300px;
-            flex: 1;
-        }
+    .mainRow {
+        grid-template-columns: 1fr;
     }
 }

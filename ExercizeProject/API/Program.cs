@@ -41,6 +41,15 @@ builder.Services.AddAuthorization();
 builder.Services.AddRepositories();
 builder.Services.AddServices();
 
+// Email: real SMTP when configured, otherwise log the mails (dev mode).
+if (!string.IsNullOrEmpty(builder.Configuration["Email:SmtpHost"]))
+    builder.Services.AddScoped<Service.Interface.IEmailSender, Service.Services.SmtpEmailSender>();
+else
+    builder.Services.AddScoped<Service.Interface.IEmailSender, Service.Services.LoggingEmailSender>();
+
+// ~24h-ahead reservation reminder emails.
+builder.Services.AddHostedService<API.Services.ReservationReminderService>();
+
 builder.Services.AddScoped<ISourceCollector, DevpostScraperCollector>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

@@ -63,15 +63,42 @@ namespace API.Controllers
 
             try
             {
-                var created = await reservationService.CreateAsync(dto, organizationId);
-                if (created is null)
-                    return BadRequest("The restaurant or table does not belong to your organization.");
-
-                return CreatedAtAction(nameof(GetReservation), new { id = created.Id }, created);
+                var result = await reservationService.CreateAsync(dto, organizationId);
+                return result.Outcome switch
+                {
+                    CreateReservationOutcome.Created =>
+                        CreatedAtAction(nameof(GetReservation), new { id = result.Reservation!.Id }, result.Reservation),
+                    CreateReservationOutcome.NotOwned =>
+                        BadRequest("The restaurant or table does not belong to your organization."),
+                    CreateReservationOutcome.OutsideServiceWindow =>
+                        BadRequest("That time is outside the restaurant's opening hours for this service."),
+                    CreateReservationOutcome.OverCapacity =>
+                        Conflict("This service is fully booked (guest limit reached). You can add the reservation to the waitlist instead."),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError),
+                };
             }
             catch (Exception e)
             {
                 const string errorMsg = "An error occurred while creating the reservation";
+                logger.LogError(e, errorMsg);
+                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
+            }
+        }
+
+        [HttpPut("{id:guid}/status")]
+        public async Task<ActionResult<ReservationDto>> UpdateStatus(Guid id, [FromBody] UpdateReservationStatusDto dto)
+        {
+            if (!TryGetOrganizationId(out var organizationId))
+                return Unauthorized();
+
+            try
+            {
+                var updated = await reservationService.UpdateStatusAsync(id, dto.Status, organizationId);
+                return updated is null ? NotFound() : Ok(updated);
+            }
+            catch (Exception e)
+            {
+                const string errorMsg = "An error occurred while updating the reservation status";
                 logger.LogError(e, errorMsg);
                 return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
             }

@@ -58,6 +58,12 @@ export function useReservations(filters: ReservationFilters) {
         return updated;
     }, []);
 
+    const updateStatus = useCallback(async (id: string, status: Parameters<typeof ReservationService.updateStatus>[1]) => {
+        const updated = await ReservationService.updateStatus(id, status);
+        setReservations((current) => current.map((r) => (r.id === id ? updated : r)));
+        return updated;
+    }, []);
+
     return {
         reservations,
         loading,
@@ -67,5 +73,6 @@ export function useReservations(filters: ReservationFilters) {
         updateReservation,
         deleteReservation,
         assignTable,
+        updateStatus,
     };
 }

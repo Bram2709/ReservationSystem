@@ -33,5 +33,8 @@ namespace Models.DTOs.Reservation
         public DateTime ReservationDateTime { get; set; }
 
         public Guid? TableId { get; set; }
+
+        [Range(15, 720)]
+        public int? DurationMinutes { get; set; }
     }
 }

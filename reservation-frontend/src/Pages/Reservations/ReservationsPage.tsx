@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useReservations } from "../../hooks/useReservations";
 import { useRestaurants } from "../../hooks/useRestaurants";
-import { TIME_FRAME_LABELS, TimeFrame } from "../../types/reservation";
+import { ReservationStatus, STATUS_LABELS, TIME_FRAME_LABELS, TimeFrame } from "../../types/reservation";
 import type { CreateReservationPayload, Reservation, ReservationFilters } from "../../types/reservation";
+import { apiErrorMessage } from "../../utils/apiError";
 import { ReservationForm } from "./ReservationForm";
 import { TablePicker } from "./TablePicker";
 import style from "./ReservationPage.module.css";
@@ -34,11 +35,11 @@ export function ReservationsPage() {
     const [day, setDay] = useState("");
     const [restaurantId, setRestaurantId] = useState("");
     const [timeFrame, setTimeFrame] = useState<TimeFrame | "">("");
+    const [statusFilter, setStatusFilter] = useState<ReservationStatus | "">("");
     const [search, setSearch] = useState("");
 
     const [editing, setEditing] = useState<Reservation | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
     const [notice, setNotice] = useState<Notice | null>(null);
     const [tablePickerFor, setTablePickerFor] = useState<Reservation | null>(null);
@@ -55,8 +56,8 @@ export function ReservationsPage() {
         error,
         createReservation,
         updateReservation,
-        deleteReservation,
         assignTable,
+        updateStatus,
     } = useReservations(filters);
 
     const { restaurants } = useRestaurants();
@@ -73,15 +74,15 @@ export function ReservationsPage() {
         return created;
     }
 
-    // Name/email search stays client-side: the API has no text filter, and the result
-    // set is already narrowed by day/restaurant/timeframe.
+    // Name/email search and status filter stay client-side: the API narrows by
+    // day/restaurant/timeframe already.
     const visible = useMemo(() => {
         const term = search.trim().toLowerCase();
-        if (!term) return reservations;
         return reservations.filter((r) =>
-            r.name.toLowerCase().includes(term) || r.email.toLowerCase().includes(term)
+            (statusFilter === "" || r.status === statusFilter) &&
+            (!term || r.name.toLowerCase().includes(term) || r.email.toLowerCase().includes(term))
         );
-    }, [reservations, search]);
+    }, [reservations, search, statusFilter]);
 
     const totalGuests = useMemo(
         () => visible.reduce((sum, r) => sum + r.partySize, 0),
@@ -101,13 +102,12 @@ export function ReservationsPage() {
         setIsFormOpen(true);
     }
 
-    async function handleDelete(id: string) {
+    async function setStatus(id: string, status: ReservationStatus) {
         setActionError(null);
         try {
-            await deleteReservation(id);
-            setPendingDeleteId(null);
-        } catch {
-            setActionError("Could not cancel that reservation. Please try again.");
+            await updateStatus(id, status);
+        } catch (err) {
+            setActionError(apiErrorMessage(err, "Could not update that reservation."));
         }
     }
 
@@ -167,13 +167,27 @@ export function ReservationsPage() {
                         <option key={tf} value={tf}>{TIME_FRAME_LABELS[tf]}</option>
                     ))}
                 </select>
-                {(day || restaurantId || timeFrame !== "" || search) && (
+                <select
+                    className={style.filterField}
+                    value={statusFilter}
+                    onChange={(e) =>
+                        setStatusFilter(e.target.value === "" ? "" : (Number(e.target.value) as ReservationStatus))
+                    }
+                    aria-label="Filter by status"
+                >
+                    <option value="">All statuses</option>
+                    {Object.values(ReservationStatus).map((s) => (
+                        <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                    ))}
+                </select>
+                {(day || restaurantId || timeFrame !== "" || statusFilter !== "" || search) && (
                     <button
                         className={style.ghostBtn}
                         onClick={() => {
                             setDay("");
                             setRestaurantId("");
                             setTimeFrame("");
+                            setStatusFilter("");
                             setSearch("");
                         }}
                     >
@@ -214,7 +228,7 @@ export function ReservationsPage() {
                                 <th>When</th>
                                 <th>Service</th>
                                 <th>Party</th>
-                                <th>Restaurant</th>
+                                <th>Status</th>
                                 <th>Table</th>
                                 <th aria-label="Actions" />
                             </tr>
@@ -232,7 +246,11 @@ export function ReservationsPage() {
                                         <span className={style.badge}>{TIME_FRAME_LABELS[r.timeFrame]}</span>
                                     </td>
                                     <td>{r.partySize}</td>
-                                    <td>{r.restaurantName ?? "—"}</td>
+                                    <td>
+                                        <span className={`${style.statusBadge} ${style[`status${r.status}`]}`}>
+                                            {STATUS_LABELS[r.status]}
+                                        </span>
+                                    </td>
                                     <td>
                                         <div className={style.tableCell}>
                                             {r.tableNumber != null
@@ -247,37 +265,28 @@ export function ReservationsPage() {
                                         </div>
                                     </td>
                                     <td className={style.actions}>
-                                        {pendingDeleteId === r.id ? (
+                                        {r.status === ReservationStatus.Confirmed && (
                                             <>
-                                                <button
-                                                    className={style.dangerBtn}
-                                                    onClick={() => handleDelete(r.id)}
-                                                >
-                                                    Confirm
-                                                </button>
-                                                <button
-                                                    className={style.ghostBtn}
-                                                    onClick={() => setPendingDeleteId(null)}
-                                                >
-                                                    Keep
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button
-                                                    className={style.ghostBtn}
-                                                    onClick={() => openEdit(r)}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    className={style.dangerGhostBtn}
-                                                    onClick={() => setPendingDeleteId(r.id)}
-                                                >
-                                                    Cancel
-                                                </button>
+                                                <button className={style.ghostBtn} onClick={() => setStatus(r.id, ReservationStatus.Seated)}>Seat</button>
+                                                <button className={style.ghostBtn} onClick={() => setStatus(r.id, ReservationStatus.NoShow)}>No-show</button>
+                                                <button className={style.dangerGhostBtn} onClick={() => setStatus(r.id, ReservationStatus.Cancelled)}>Cancel</button>
                                             </>
                                         )}
+                                        {r.status === ReservationStatus.Seated && (
+                                            <button className={style.ghostBtn} onClick={() => setStatus(r.id, ReservationStatus.Finished)}>Finish</button>
+                                        )}
+                                        {r.status === ReservationStatus.Waitlisted && (
+                                            <>
+                                                <button className={style.ghostBtn} onClick={() => setStatus(r.id, ReservationStatus.Confirmed)}>Promote</button>
+                                                <button className={style.dangerGhostBtn} onClick={() => setStatus(r.id, ReservationStatus.Cancelled)}>Cancel</button>
+                                            </>
+                                        )}
+                                        {(r.status === ReservationStatus.Finished ||
+                                            r.status === ReservationStatus.NoShow ||
+                                            r.status === ReservationStatus.Cancelled) && (
+                                            <button className={style.ghostBtn} onClick={() => setStatus(r.id, ReservationStatus.Confirmed)}>Reactivate</button>
+                                        )}
+                                        <button className={style.ghostBtn} onClick={() => openEdit(r)}>Edit</button>
                                     </td>
                                 </tr>
                             ))}

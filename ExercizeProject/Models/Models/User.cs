@@ -18,5 +18,13 @@ namespace Models.Models
         public Organization? Organization { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Rotating refresh-token (stored hashed) that backs the httpOnly session cookie.
+        public string? RefreshTokenHash { get; set; }
+        public DateTime? RefreshTokenExpiresAt { get; set; }
+
+        // One-time password-reset token (stored hashed).
+        public string? PasswordResetTokenHash { get; set; }
+        public DateTime? PasswordResetExpiresAt { get; set; }
     }
 }

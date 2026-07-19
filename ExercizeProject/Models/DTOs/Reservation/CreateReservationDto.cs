@@ -36,5 +36,12 @@ namespace Models.DTOs.Reservation
 
         // Null until the guest is assigned a table.
         public Guid? TableId { get; set; }
+
+        // Table-hold length; null falls back to the restaurant's default.
+        [Range(15, 720)]
+        public int? DurationMinutes { get; set; }
+
+        // True queues the reservation instead of booking it: no table, no covers count.
+        public bool Waitlisted { get; set; }
     }
 }

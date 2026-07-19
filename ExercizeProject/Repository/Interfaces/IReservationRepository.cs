@@ -1,4 +1,5 @@
-﻿using Models.Enums;
+﻿using Models.DTOs.Customer;
+using Models.Enums;
 using Models.Models;
 
 namespace Repository.Interfaces
@@ -29,16 +30,28 @@ namespace Repository.Interfaces
 
         Task<bool> TableBelongsToRestaurantAsync(Guid tableId, Guid restaurantId);
 
+        // The restaurant with its settings, when owned by the organization.
+        Task<Restaurant?> GetRestaurantForOrganizationAsync(Guid restaurantId, Guid organizationId);
+
         // Seatable tables (MaxSeats > 0) of a restaurant, with their room for display.
         Task<IReadOnlyList<Table>> GetSeatableTablesForRestaurantAsync(Guid restaurantId);
 
-        // Reservations that hold a table in a given slot (same restaurant, day and service),
-        // optionally excluding one reservation (itself, when reassigning).
-        Task<IReadOnlyList<Reservation>> GetTableHoldersInSlotAsync(
+        // Active (Confirmed/Seated) table-holding reservations near an instant, for
+        // in-memory time-overlap checks. Window is wide enough for any duration.
+        Task<IReadOnlyList<Reservation>> GetActiveTableHoldersNearAsync(
+            Guid restaurantId,
+            DateTime aroundUtc,
+            Guid? excludeReservationId);
+
+        // Total active guests booked for a day + service (waitlist excluded).
+        Task<int> GetActiveCoversAsync(
             Guid restaurantId,
             DateTime dayStartUtc,
             DateTime dayEndUtc,
             TimeFrame timeFrame,
             Guid? excludeReservationId);
+
+        // Guests aggregated by email across the organization's reservation history.
+        Task<IReadOnlyList<CustomerDto>> GetCustomersAsync(Guid organizationId);
     }
 }

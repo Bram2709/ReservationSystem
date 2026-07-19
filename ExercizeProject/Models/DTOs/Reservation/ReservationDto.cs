@@ -14,6 +14,8 @@ namespace Models.DTOs.Reservation
         public int PartySize { get; set; }
         public TimeFrame TimeFrame { get; set; }
         public DateTime ReservationDateTime { get; set; }
+        public ReservationStatus Status { get; set; }
+        public int DurationMinutes { get; set; }
 
         public Guid RestaurantId { get; set; }
         public string? RestaurantName { get; set; }

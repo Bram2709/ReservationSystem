@@ -1,8 +1,10 @@
 import axios from 'axios';
 import type {
     CreateReservationPayload,
+    Customer,
     Reservation,
     ReservationFilters,
+    ReservationStatus,
     TableAvailability,
     UpdateReservationPayload,
 } from '../types/reservation';
@@ -61,6 +63,26 @@ export class ReservationService {
             return response.data;
         } catch (error) {
             console.error("Failed to fetch available tables:", error);
+            throw error;
+        }
+    }
+
+    static async updateStatus(reservationId: string, status: ReservationStatus): Promise<Reservation> {
+        try {
+            const response = await axios.put<Reservation>(`/reservation/${reservationId}/status`, { status });
+            return response.data;
+        } catch (error) {
+            console.error("Failed to update reservation status:", error);
+            throw error;
+        }
+    }
+
+    static async getCustomers(): Promise<Customer[]> {
+        try {
+            const response = await axios.get<Customer[]>('/customer');
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch customers:", error);
             throw error;
         }
     }
