@@ -30,6 +30,13 @@ export function RestaurantsPage() {
     const [roomForm, setRoomForm] = useState<RoomFormTarget | null>(null);
     const [pendingDelete, setPendingDelete] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    async function copyBookingLink(restaurantId: string) {
+        await navigator.clipboard.writeText(`${window.location.origin}/book/${restaurantId}`);
+        setCopiedId(restaurantId);
+        setTimeout(() => setCopiedId((c) => (c === restaurantId ? null : c)), 2000);
+    }
 
     const totals = useMemo(() => {
         const rooms = restaurants.flatMap((r) => r.rooms);
@@ -145,6 +152,14 @@ export function RestaurantsPage() {
                                         )}
                                     </div>
                                 </div>
+
+                                <button
+                                    className={style.ghostBtn}
+                                    onClick={() => copyBookingLink(restaurant.id)}
+                                    title="Copy the public page where guests book a table themselves"
+                                >
+                                    {copiedId === restaurant.id ? "Link copied!" : "Copy booking link"}
+                                </button>
 
                                 <dl className={style.stats}>
                                     <div className={style.stat}>

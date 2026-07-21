@@ -1,0 +1,232 @@
+.page {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 16px;
+    background-color: var(--deep-cool-background-grey);
+    box-sizing: border-box;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 520px;
+    padding: 28px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 12px;
+    background-color: var(--white);
+    box-shadow: 0 24px 64px rgba(9, 11, 12, 0.10);
+    box-sizing: border-box;
+}
+
+.head {
+    text-align: center;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--deep-charcoal);
+}
+
+.subtitle {
+    margin-top: 10px;
+    color: var(--primary-purple);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.muted {
+    color: var(--slate-grey);
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+}
+
+.control {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    color: var(--slate-grey);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.control input,
+.control select,
+.form input,
+.form textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--deep-cool-background-grey);
+    border-radius: 6px;
+    background-color: var(--neutral-background-grey);
+    color: var(--deep-charcoal);
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.control input:focus,
+.control select:focus,
+.form input:focus,
+.form textarea:focus {
+    outline: 2px solid var(--primary-purple);
+    outline-offset: -1px;
+    background-color: var(--white);
+}
+
+.noSlots {
+    padding: 16px;
+    border: 1px dashed var(--warning-orange);
+    border-radius: 8px;
+    color: color-mix(in srgb, var(--warning-orange) 80%, var(--black));
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.serviceBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.serviceName {
+    color: var(--slate-grey);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.slot,
+.slotSelected {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.slot {
+    border: 1px solid var(--deep-cool-background-grey);
+    background-color: var(--white);
+    color: var(--deep-charcoal);
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.slot:hover {
+    border-color: var(--primary-purple);
+    color: var(--primary-purple);
+}
+
+.slotSelected {
+    border: 1px solid var(--primary-purple);
+    background-color: var(--primary-purple);
+    color: var(--white);
+    box-shadow: 0 6px 16px var(--shadow-purple);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--deep-cool-background-grey);
+}
+
+.formTitle {
+    color: var(--deep-charcoal);
+    font-size: 0.9375rem;
+    font-weight: 700;
+}
+
+.form textarea {
+    resize: vertical;
+}
+
+.error {
+    padding: 10px 14px;
+    border: 1px solid var(--error-red);
+    border-radius: 6px;
+    background-color: color-mix(in srgb, var(--error-red) 8%, var(--white));
+    color: var(--error-red);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.bookBtn {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--primary-purple);
+    color: var(--white);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px var(--shadow-purple);
+    transition: background-color 0.15s ease;
+}
+
+.bookBtn:hover:not(:disabled) {
+    background-color: var(--occupied-table-accent);
+}
+
+.bookBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* --- Confirmation --- */
+
+.checkmark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background-color: color-mix(in srgb, var(--success-green) 16%, var(--white));
+    color: var(--success-green);
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.summary {
+    color: var(--deep-charcoal);
+    font-size: 1rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.linkBtn {
+    align-self: center;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--primary-purple);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.linkBtn:hover {
+    text-decoration: underline;
+}

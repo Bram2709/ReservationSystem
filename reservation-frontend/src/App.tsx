@@ -16,6 +16,7 @@ import { FloorViewPage } from './Pages/FloorView/FloorViewPage.tsx';
 import { DashboardPage } from './Pages/Dashboard/DashboardPage.tsx';
 import { SettingsPage } from './Pages/Settings/SettingsPage.tsx';
 import { CustomersPage } from './Pages/Customers/CustomersPage.tsx';
+import { BookingPage } from './Pages/Book/BookingPage.tsx';
 
 function App() {
 
@@ -24,6 +25,8 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path='/' element={<LandingPage />} />
+        {/* Guest-facing booking page — no login, shared via each restaurant's booking link. */}
+        <Route path='/book/:restaurantId' element={<BookingPage />} />
         <Route element={<AuthLayout />}>
           <Route path='/login' element={<LoginPage />} />
           <Route path='/register' element={<RegisterPage />} />

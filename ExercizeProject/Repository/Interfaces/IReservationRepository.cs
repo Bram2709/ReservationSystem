@@ -33,6 +33,9 @@ namespace Repository.Interfaces
         // The restaurant with its settings, when owned by the organization.
         Task<Restaurant?> GetRestaurantForOrganizationAsync(Guid restaurantId, Guid organizationId);
 
+        // Unscoped lookup for the public booking flow (guest pages have no organization).
+        Task<Restaurant?> GetRestaurantPublicAsync(Guid restaurantId);
+
         // Seatable tables (MaxSeats > 0) of a restaurant, with their room for display.
         Task<IReadOnlyList<Table>> GetSeatableTablesForRestaurantAsync(Guid restaurantId);
 

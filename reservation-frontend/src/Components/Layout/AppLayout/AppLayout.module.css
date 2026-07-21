@@ -16,6 +16,10 @@
 
 .contentContainer {
     flex: 1;
+    /* min-height:0 lets this flex child shrink below its content so it can actually
+       scroll instead of overflowing the fixed-height (100vh, overflow:hidden) wrapper. */
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .backdrop {

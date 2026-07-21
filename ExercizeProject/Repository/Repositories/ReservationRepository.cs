@@ -112,6 +112,13 @@ namespace Repository.Repositories
                 .FirstOrDefaultAsync(r => r.Id == restaurantId && r.OrganizationId == organizationId);
         }
 
+        public async Task<Restaurant?> GetRestaurantPublicAsync(Guid restaurantId)
+        {
+            return await context.Restaurants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == restaurantId);
+        }
+
         public async Task<IReadOnlyList<Table>> GetSeatableTablesForRestaurantAsync(Guid restaurantId)
         {
             // Walls and other decor have MaxSeats == 0 and are not seatable.

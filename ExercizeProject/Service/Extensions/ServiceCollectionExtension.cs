@@ -11,6 +11,7 @@ namespace Service.Extensions
         {
             services.AddScoped<IRestaurantService, RestaurantService>();
             services.AddScoped<IReservationService, ReservationService>();
+            services.AddScoped<IPublicBookingService, PublicBookingService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IFloorplanInterface, FloorplanService>();
