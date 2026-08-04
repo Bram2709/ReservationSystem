@@ -1,10 +1,11 @@
 name: Deploy to Azure (production)
 
 # Deploys the full app (React SPA served from the .NET API's wwwroot) to a single
-# Azure App Service whenever changes land on the dev branch. One environment, one deploy.
+# Azure App Service whenever changes land on main. Develop on dev, then merge into
+# main to ship to production. One environment, one deploy.
 on:
   push:
-    branches: [dev]
+    branches: [main]
   workflow_dispatch: {} # lets you trigger a deploy manually from the Actions tab
 
 # EDIT THIS: the exact name of the App Service you create in Azure (its default host
