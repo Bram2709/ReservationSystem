@@ -1,0 +1,73 @@
+name: Deploy to Azure (production)
+
+# Deploys the full app (React SPA served from the .NET API's wwwroot) to a single
+# Azure App Service whenever changes land on the dev branch. One environment, one deploy.
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch: {} # lets you trigger a deploy manually from the Actions tab
+
+# EDIT THIS: the exact name of the App Service you create in Azure (its default host
+# becomes https://<name>.azurewebsites.net). App name only — no URL, no resource group.
+env:
+  AZURE_WEBAPP_NAME: bram-reservation-prod
+  DOTNET_VERSION: "10.0.x"
+  NODE_VERSION: "20"
+
+# Required for OIDC login to Azure (short-lived token, no stored password).
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # --- Frontend: build the React SPA and drop it into the API's wwwroot ---
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: reservation-frontend/package-lock.json
+
+      - name: Install & build frontend
+        working-directory: reservation-frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy SPA build into API/wwwroot
+        run: |
+          rm -rf ExercizeProject/API/wwwroot
+          mkdir -p ExercizeProject/API/wwwroot
+          cp -r reservation-frontend/dist/* ExercizeProject/API/wwwroot/
+
+      # --- Backend: test, then publish the API (wwwroot is included in the output) ---
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Run tests
+        run: dotnet test ExercizeProject/Test/Test.csproj -c Release --nologo
+
+      - name: Publish API
+        run: dotnet publish ExercizeProject/API/API.csproj -c Release -o ${{ github.workspace }}/publish
+
+      # --- Deploy to Azure App Service via OIDC ---
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ github.workspace }}/publish

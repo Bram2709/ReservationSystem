@@ -3,8 +3,6 @@ using Repository;
 using Repository.Extensions;
 using Service.Extensions;
 using System.Net.Http.Headers;
-using Collectors;
-using Collectors.Scrapers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
@@ -14,7 +12,6 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var connectionString2 = builder.Configuration.GetConnectionString("DefaultConnection2");
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -50,15 +47,8 @@ else
 // ~24h-ahead reservation reminder emails.
 builder.Services.AddHostedService<API.Services.ReservationReminderService>();
 
-builder.Services.AddScoped<ISourceCollector, DevpostScraperCollector>();
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure()));
-
-builder.Services.AddDbContext<CollectorsDbContext>(options =>
-    options.UseSqlServer(connectionString2, sql => sql.EnableRetryOnFailure()));
-
-builder.Services.AddScoped<CollectorOrchestrator>();
 
 
 // Compress API responses (the restaurants payload ships every table's geometry). Fastest
@@ -81,6 +71,11 @@ var app = builder.Build();
 
 app.UseResponseCompression();
 
+// Serve the built React SPA from the same origin as the API. The CI pipeline copies the
+// Vite `dist` output into wwwroot before publish, so index.html + assets ship inside the app.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -93,6 +88,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SPA fallback: any request not matched by a controller (api/*) or a real static file
+// returns index.html, so client-side routes like /book/:id work on a hard refresh.
+app.MapFallbackToFile("index.html");
 
 // Move migration logic here, using DI to get the DbContext.
 if (!app.Environment.IsDevelopment())
